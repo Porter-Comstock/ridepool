@@ -1,0 +1,194 @@
+// Prisma schema for RidePool - Colgate University Carpool App
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER & AUTH
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique // Must be @colgate.edu - enforced at auth layer
+  name          String?
+  image         String?
+  phone         String?
+  bio           String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  ridesPosted   Ride[]           @relation("RidesPosted")
+  rideRequests  RideRequest[]
+  messagesSent  Message[]        @relation("MessagesSent")
+  messagesReceived Message[]     @relation("MessagesReceived")
+
+  @@index([email])
+}
+
+// NextAuth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// RIDES
+// ============================================================================
+
+model Ride {
+  id          String   @id @default(cuid())
+  driverId    String
+
+  // Location
+  origin      String   // e.g., "Colgate University, Hamilton, NY"
+  destination String   // e.g., "Syracuse Airport (SYR)"
+
+  // For more precise locations (optional, for future map integration)
+  originLat   Float?
+  originLng   Float?
+  destLat     Float?
+  destLng     Float?
+
+  // Timing - for one-off rides
+  departureDate DateTime?  // null if recurring-only
+  departureTime String     // e.g., "14:30" (stored separately for recurring rides)
+
+  // Recurrence (null = one-off ride)
+  isRecurring       Boolean  @default(false)
+  recurrencePattern String?  // JSON: {"days": ["monday", "wednesday", "friday"], "until": "2025-05-15"}
+
+  // Capacity & cost
+  seatsAvailable    Int
+  pricePerSeat      Float?   // Suggested reimbursement in dollars (null = free)
+
+  // Details
+  notes       String?  // e.g., "2 bags max, no smoking"
+
+  // Status
+  status      RideStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  driver      User          @relation("RidesPosted", fields: [driverId], references: [id], onDelete: Cascade)
+  requests    RideRequest[]
+
+  @@index([driverId])
+  @@index([departureDate])
+  @@index([origin])
+  @@index([destination])
+  @@index([status])
+}
+
+enum RideStatus {
+  ACTIVE
+  FULL
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================================
+// RIDE REQUESTS (Booking system)
+// ============================================================================
+
+model RideRequest {
+  id          String   @id @default(cuid())
+  rideId      String
+  passengerId String
+
+  // For recurring rides, which specific date is being requested
+  requestedDate DateTime?
+
+  seatsRequested Int      @default(1)
+  message        String?  // Initial message from passenger
+
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  ride      Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger User @relation(fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@unique([rideId, passengerId, requestedDate]) // Prevent duplicate requests
+  @@index([rideId])
+  @@index([passengerId])
+  @@index([status])
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+// ============================================================================
+// MESSAGING
+// ============================================================================
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+
+  // Optional: link message to a specific ride for context
+  rideId     String?
+
+  content    String   @db.Text
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  sender   User @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("MessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([rideId])
+  @@index([createdAt])
+}
