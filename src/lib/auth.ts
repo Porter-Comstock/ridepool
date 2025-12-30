@@ -6,6 +6,7 @@ import { prisma } from "./prisma"
 const ALLOWED_EMAIL_DOMAIN = "colgate.edu"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
   providers: [
     Google({
