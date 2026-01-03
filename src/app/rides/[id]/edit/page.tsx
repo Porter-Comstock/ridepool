@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { use } from "react"
+import { LocationInput } from "@/components/location-input"
 
 const DAYS_OF_WEEK = [
   { value: "monday", label: "Mon" },
@@ -152,24 +153,22 @@ export default function EditRidePage({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Origin
               </label>
-              <input
-                type="text"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              <LocationInput
                 value={formData.origin}
-                onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, origin: value })}
+                placeholder="Enter origin"
+                required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Destination
               </label>
-              <input
-                type="text"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              <LocationInput
                 value={formData.destination}
-                onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, destination: value })}
+                placeholder="Enter destination"
+                required
               />
             </div>
           </div>

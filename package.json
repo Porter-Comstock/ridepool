@@ -13,6 +13,7 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@ducanh2912/next-pwa": "^10.2.9",
     "@prisma/client": "^5.22.0",
+    "@react-google-maps/api": "^2.20.8",
     "dotenv": "^17.2.3",
     "next": "16.1.1",
     "next-auth": "^5.0.0-beta.30",
