@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/notifications"
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +37,15 @@ export async function POST(request: NextRequest) {
         rideId: rideId || null,
       },
     })
+
+    // Send push notification to recipient
+    const previewContent = content.length > 50 ? content.slice(0, 50) + "..." : content
+    sendPushNotification(recipientId, {
+      title: session.user.name || "New Message",
+      body: previewContent,
+      url: `/messages/${session.user.id}`,
+      data: { messageId: message.id, senderId: session.user.id },
+    }).catch(console.error)
 
     return NextResponse.json(message, { status: 201 })
   } catch (error) {

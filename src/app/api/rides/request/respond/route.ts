@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/notifications"
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       data: { status: newStatus },
     })
 
-    // If accepted, create a welcome message
+    // If accepted, create a welcome message and notify the passenger
     if (action === "accept") {
       await prisma.message.create({
         data: {
@@ -64,6 +65,14 @@ export async function POST(request: NextRequest) {
           content: `Your ride request from ${rideRequest.ride.origin} to ${rideRequest.ride.destination} has been accepted! Feel free to message me to coordinate.`,
         },
       })
+
+      // Send push notification to the passenger
+      sendPushNotification(rideRequest.passengerId, {
+        title: "Request Accepted!",
+        body: `${session.user.name || "Driver"} accepted your ride to ${rideRequest.ride.destination}`,
+        url: `/messages/${session.user.id}`,
+        data: { rideId: rideRequest.rideId, driverId: session.user.id },
+      }).catch(console.error)
     }
 
     return NextResponse.json(updatedRequest)

@@ -2,6 +2,7 @@ import { auth, signOut } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { NotificationPrompt } from "@/components/notification-prompt"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -224,6 +225,9 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Notification Permission Prompt */}
+      <NotificationPrompt />
     </div>
   )
 }

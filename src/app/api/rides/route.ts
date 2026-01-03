@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushToAllExcept } from "@/lib/notifications"
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +66,18 @@ export async function POST(request: NextRequest) {
         recurrencePattern,
       },
     })
+
+    // Send push notification to all users except the driver
+    const dateInfo = isRecurring
+      ? "Recurring ride"
+      : new Date(departureDate).toLocaleDateString()
+
+    sendPushToAllExcept(session.user.id, {
+      title: "New Ride Available",
+      body: `${origin} → ${destination} on ${dateInfo}`,
+      url: `/rides/${ride.id}`,
+      data: { rideId: ride.id },
+    }).catch(console.error) // Don't await, fire and forget
 
     return NextResponse.json(ride, { status: 201 })
   } catch (error) {

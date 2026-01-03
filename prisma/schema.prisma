@@ -25,12 +25,13 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  ridesPosted   Ride[]           @relation("RidesPosted")
-  rideRequests  RideRequest[]
-  messagesSent  Message[]        @relation("MessagesSent")
-  messagesReceived Message[]     @relation("MessagesReceived")
+  accounts          Account[]
+  sessions          Session[]
+  ridesPosted       Ride[]              @relation("RidesPosted")
+  rideRequests      RideRequest[]
+  messagesSent      Message[]           @relation("MessagesSent")
+  messagesReceived  Message[]           @relation("MessagesReceived")
+  pushSubscriptions PushSubscription[]
 
   @@index([email])
 }
@@ -191,4 +192,21 @@ model Message {
   @@index([receiverId])
   @@index([rideId])
   @@index([createdAt])
+}
+
+// ============================================================================
+// PUSH NOTIFICATIONS
+// ============================================================================
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

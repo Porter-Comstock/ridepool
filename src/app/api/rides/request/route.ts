@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/notifications"
 
 export async function POST(request: NextRequest) {
   try {
@@ -77,6 +78,14 @@ export async function POST(request: NextRequest) {
         message: message || null,
       },
     })
+
+    // Notify the driver about the new request
+    sendPushNotification(ride.driverId, {
+      title: "New Ride Request",
+      body: `${session.user.name || "Someone"} wants to join your ride to ${ride.destination}`,
+      url: "/requests",
+      data: { requestId: rideRequest.id, rideId },
+    }).catch(console.error)
 
     return NextResponse.json(rideRequest, { status: 201 })
   } catch (error) {
