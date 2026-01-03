@@ -11,6 +11,11 @@ export default auth((req) => {
   const { nextUrl } = req
   const isLoggedIn = !!req.auth
 
+  // Allow all API routes (including auth callbacks) to pass through
+  if (nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.next()
+  }
+
   const isProtectedRoute = protectedRoutes.some((route) =>
     nextUrl.pathname.startsWith(route)
   )
