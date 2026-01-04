@@ -51,14 +51,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate that departure date is not in the past (only check date, not time, to avoid timezone issues)
+    // Validate that departure date is not in the past
     if (!isRecurring && departureDate) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      const departureDay = new Date(departureDate + "T00:00:00")
-      departureDay.setHours(0, 0, 0, 0)
+      // Get today's date string in YYYY-MM-DD format (UTC)
+      const todayStr = new Date().toISOString().split("T")[0]
 
-      if (departureDay < today) {
+      console.log("Date validation:", { departureDate, todayStr, isPast: departureDate < todayStr })
+
+      // departureDate is in YYYY-MM-DD format, string comparison works correctly
+      if (departureDate < todayStr) {
         return NextResponse.json(
           { error: "Cannot schedule a ride in the past" },
           { status: 400 }
