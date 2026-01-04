@@ -66,7 +66,7 @@ export function DashboardClient({
   pendingRequestsCount,
   unreadMessagesCount,
 }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<"bulletin" | "create">("bulletin")
+  const [activeTab, setActiveTab] = useState<"bulletin" | "create">("create")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -214,16 +214,6 @@ export function DashboardClient({
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex">
             <button
-              onClick={() => setActiveTab("bulletin")}
-              className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${
-                activeTab === "bulletin"
-                  ? "text-[#821019] border-[#821019]"
-                  : "text-gray-500 border-transparent hover:text-gray-700"
-              }`}
-            >
-              Ride Bulletin
-            </button>
-            <button
               onClick={() => setActiveTab("create")}
               className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${
                 activeTab === "create"
@@ -232,6 +222,16 @@ export function DashboardClient({
               }`}
             >
               Create Ride
+            </button>
+            <button
+              onClick={() => setActiveTab("bulletin")}
+              className={`flex-1 py-3 text-center font-medium border-b-2 transition-colors ${
+                activeTab === "bulletin"
+                  ? "text-[#821019] border-[#821019]"
+                  : "text-gray-500 border-transparent hover:text-gray-700"
+              }`}
+            >
+              Existing Rides
             </button>
           </div>
         </div>
