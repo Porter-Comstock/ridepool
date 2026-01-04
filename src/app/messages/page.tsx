@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { LocalTime } from "@/components/local-time"
 
 export default async function MessagesPage() {
   const session = await auth()
@@ -106,9 +107,11 @@ export default async function MessagesPage() {
                     <p className="font-medium text-gray-900 truncate">
                       {partner.name || "Anonymous"}
                     </p>
-                    <span className="text-xs text-gray-500">
-                      {lastMessage.createdAt.toLocaleDateString()}
-                    </span>
+                    <LocalTime
+                      date={lastMessage.createdAt.toISOString()}
+                      format="date"
+                      className="text-xs text-gray-500"
+                    />
                   </div>
                   <p className="text-sm text-gray-500 truncate mt-1">
                     {lastMessage.senderId === session.user.id && "You: "}

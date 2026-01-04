@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { MessageInput } from "./message-input"
+import { LocalTime } from "@/components/local-time"
 
 export default async function ConversationPage({
   params,
@@ -107,16 +108,13 @@ export default async function ConversationPage({
                   }`}
                 >
                   <p>{message.content}</p>
-                  <p
-                    className={`text-xs mt-1 ${
+                  <LocalTime
+                    date={message.createdAt.toISOString()}
+                    format="time"
+                    className={`text-xs mt-1 block ${
                       isOwn ? "text-blue-200" : "text-gray-400"
                     }`}
-                  >
-                    {message.createdAt.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
+                  />
                 </div>
               </div>
             )
