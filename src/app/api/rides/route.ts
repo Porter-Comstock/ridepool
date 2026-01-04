@@ -51,11 +51,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate that departure date/time is not in the past
+    // Validate that departure date is not in the past (only check date, not time, to avoid timezone issues)
     if (!isRecurring && departureDate) {
-      const now = new Date()
-      const departure = new Date(`${departureDate}T${departureTime}`)
-      if (departure < now) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const departureDay = new Date(departureDate + "T00:00:00")
+      departureDay.setHours(0, 0, 0, 0)
+
+      if (departureDay < today) {
         return NextResponse.json(
           { error: "Cannot schedule a ride in the past" },
           { status: 400 }
@@ -63,13 +66,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate return date is after departure date for round trips
+    // Validate return date is not before departure date for round trips
     if (rideType === "ROUND_TRIP" && returnDate && departureDate) {
-      const departure = new Date(`${departureDate}T${departureTime}`)
-      const returnDateTime = new Date(`${returnDate}T${returnTime || "00:00"}`)
-      if (returnDateTime < departure) {
+      if (returnDate < departureDate) {
         return NextResponse.json(
-          { error: "Return date must be after departure date" },
+          { error: "Return date must be on or after departure date" },
           { status: 400 }
         )
       }
