@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { LocationInput } from "./location-input"
 import { NotificationPrompt } from "./notification-prompt"
@@ -70,7 +70,12 @@ export function DashboardClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const today = getTodayString()
+  const [today, setToday] = useState("")
+
+  // Set today's date on client side only to avoid hydration mismatch
+  useEffect(() => {
+    setToday(getTodayString())
+  }, [])
 
   const [formData, setFormData] = useState({
     origin: "",
