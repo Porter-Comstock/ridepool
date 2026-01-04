@@ -11,13 +11,17 @@ export default async function DashboardPage() {
   }
 
   // Fetch available rides from OTHER users (for the bulletin)
+  // Show all active rides - future rides, recurring rides, or rides with no date set
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const availableRides = await prisma.ride.findMany({
     where: {
       driverId: { not: session.user.id },
       status: "ACTIVE",
-      // Only show future rides or recurring rides
       OR: [
-        { departureDate: { gte: new Date() } },
+        { departureDate: { gte: today } },
+        { departureDate: null },
         { isRecurring: true },
       ],
     },
