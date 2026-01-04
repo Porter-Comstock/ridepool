@@ -54,6 +54,12 @@ function formatLocation(fullAddress: string): string {
   }
 }
 
+// Get today's date in YYYY-MM-DD format for date input min attribute
+function getTodayString(): string {
+  const today = new Date()
+  return today.toISOString().split("T")[0]
+}
+
 export function DashboardClient({
   userName,
   availableRides,
@@ -64,6 +70,7 @@ export function DashboardClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const today = getTodayString()
 
   const [formData, setFormData] = useState({
     origin: "",
@@ -436,6 +443,7 @@ export function DashboardClient({
                   <input
                     type="date"
                     required
+                    min={today}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019]"
                     value={formData.departureDate}
                     onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
@@ -465,6 +473,7 @@ export function DashboardClient({
                     <input
                       type="date"
                       required
+                      min={formData.departureDate || today}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019]"
                       value={formData.returnDate}
                       onChange={(e) => setFormData({ ...formData, returnDate: e.target.value })}

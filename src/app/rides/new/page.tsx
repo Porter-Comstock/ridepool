@@ -15,10 +15,16 @@ const DAYS_OF_WEEK = [
   { value: "sunday", label: "Sun" },
 ]
 
+// Get today's date in YYYY-MM-DD format
+function getTodayString(): string {
+  return new Date().toISOString().split("T")[0]
+}
+
 export default function NewRidePage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const today = getTodayString()
 
   const [formData, setFormData] = useState({
     origin: "",
@@ -187,6 +193,7 @@ export default function NewRidePage() {
                 <input
                   type="date"
                   required
+                  min={today}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   value={formData.departureDate}
                   onChange={(e) => setFormData({ ...formData, departureDate: e.target.value })}
