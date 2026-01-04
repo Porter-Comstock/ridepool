@@ -77,10 +77,10 @@ export default async function RideDetailPage({
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
         <Link
-          href="/rides"
+          href="/dashboard"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
         >
-          ← Back to rides
+          ← Back to dashboard
         </Link>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
