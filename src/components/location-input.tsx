@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useCallback } from "react"
+import { useRef, useEffect } from "react"
 import { useLoadScript } from "@react-google-maps/api"
 
 const libraries: ("places")[] = ["places"]
@@ -22,48 +22,18 @@ export function LocationInput({
 }: LocationInputProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  // Use a ref to always have the latest onChange function (avoids stale closure)
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries,
   })
 
-  // Handle place selection from autocomplete
-  const handlePlaceChanged = useCallback(() => {
-    const place = autocompleteRef.current?.getPlace()
-    if (!place) return
-
-    // Get the place name for establishments, or formatted address for regular addresses
-    let address = ""
-    if (place.name && place.formatted_address) {
-      // For establishments like "Syracuse Airport", use the name
-      const formattedParts = place.formatted_address.split(",")
-      if (place.name !== formattedParts[0]?.trim()) {
-        address = place.name
-      } else {
-        address = place.formatted_address
-      }
-    } else {
-      address = place.formatted_address || place.name || ""
-    }
-
-    const lat = place.geometry?.location?.lat()
-    const lng = place.geometry?.location?.lng()
-
-    // Update the input value directly via DOM
-    if (inputRef.current) {
-      inputRef.current.value = address
-    }
-
-    // Notify parent
-    onChange(address, lat, lng)
-  }, [onChange])
-
+  // Initialize Google Places Autocomplete
   useEffect(() => {
-    if (!isLoaded || !inputRef.current) return
-
-    // Only initialize once
-    if (autocompleteRef.current) return
+    if (!isLoaded || !inputRef.current || autocompleteRef.current) return
 
     // Initialize autocomplete
     autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
@@ -73,25 +43,73 @@ export function LocationInput({
     })
 
     // Listen for place selection
-    autocompleteRef.current.addListener("place_changed", handlePlaceChanged)
+    autocompleteRef.current.addListener("place_changed", () => {
+      const place = autocompleteRef.current?.getPlace()
+
+      if (!place) {
+        console.log("No place selected")
+        return
+      }
+
+      console.log("Place selected:", place)
+
+      // Get the best representation of the place
+      let address = ""
+
+      if (place.formatted_address) {
+        // If we have a formatted address, use it
+        // But prefer the place name for establishments
+        if (place.name && place.name !== place.formatted_address.split(",")[0]?.trim()) {
+          // It's an establishment with a different name (like "Syracuse Airport")
+          address = place.name
+        } else {
+          // Use the full formatted address
+          address = place.formatted_address
+        }
+      } else if (place.name) {
+        // Fallback to name if no formatted address
+        address = place.name
+      }
+
+      console.log("Final address:", address)
+
+      if (!address) {
+        console.log("No address found in place result")
+        return
+      }
+
+      const lat = place.geometry?.location?.lat()
+      const lng = place.geometry?.location?.lng()
+
+      // Update the input value directly
+      if (inputRef.current) {
+        inputRef.current.value = address
+      }
+
+      // Use the ref to get the latest onChange function
+      onChangeRef.current(address, lat, lng)
+    })
 
     return () => {
       if (autocompleteRef.current) {
         google.maps.event.clearInstanceListeners(autocompleteRef.current)
+        autocompleteRef.current = null
       }
     }
-  }, [isLoaded, handlePlaceChanged])
+  }, [isLoaded])
 
   // Sync the input value when external value changes (e.g., form reset)
   useEffect(() => {
-    if (inputRef.current && inputRef.current.value !== value) {
-      inputRef.current.value = value
+    if (inputRef.current && value === "" && inputRef.current.value !== "") {
+      inputRef.current.value = ""
     }
   }, [value])
 
-  // Handle manual typing
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.target.value)
+  // Handle manual typing - only update on blur to avoid interfering with autocomplete
+  const handleBlur = () => {
+    if (inputRef.current) {
+      onChangeRef.current(inputRef.current.value)
+    }
   }
 
   const inputClassName = `w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`
@@ -101,7 +119,7 @@ export function LocationInput({
       <input
         type="text"
         defaultValue={value}
-        onChange={handleInputChange}
+        onBlur={handleBlur}
         placeholder={placeholder}
         required={required}
         className={inputClassName}
@@ -127,7 +145,7 @@ export function LocationInput({
       ref={inputRef}
       type="text"
       defaultValue={value}
-      onChange={handleInputChange}
+      onBlur={handleBlur}
       placeholder={placeholder}
       required={required}
       className={inputClassName}
