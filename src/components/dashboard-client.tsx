@@ -93,13 +93,21 @@ export function DashboardClient({
     setSuccess("")
 
     try {
+      // Get timezone offset in minutes (e.g., -300 for EST which is UTC-5)
+      const timezoneOffset = new Date().getTimezoneOffset()
+
+      const payload = {
+        ...formData,
+        isRecurring: false,
+        timezoneOffset,
+      }
+
+      console.log("Submitting ride with data:", payload)
+
       const response = await fetch("/api/rides", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          isRecurring: false,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {

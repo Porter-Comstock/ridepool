@@ -54,10 +54,13 @@ export default function NewRidePage() {
     setError("")
 
     try {
+      // Get timezone offset in minutes (e.g., -300 for EST which is UTC-5)
+      const timezoneOffset = new Date().getTimezoneOffset()
+
       const response = await fetch("/api/rides", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, timezoneOffset }),
       })
 
       if (!response.ok) {

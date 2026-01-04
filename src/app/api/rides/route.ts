@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       rideRole,
       returnDate,
       returnTime,
+      timezoneOffset,
     } = body
 
     // Validation
@@ -54,10 +55,15 @@ export async function POST(request: NextRequest) {
     // Validate that departure date/time is not in the past
     if (!isRecurring && departureDate) {
       const now = new Date()
-      const todayStr = now.toISOString().split("T")[0]
 
-      // Check if date is in the past
-      if (departureDate < todayStr) {
+      // Calculate user's local time using their timezone offset
+      // timezoneOffset is in minutes, positive for timezones behind UTC (e.g., 300 for EST)
+      const offsetMs = (timezoneOffset || 0) * 60 * 1000
+      const userLocalNow = new Date(now.getTime() - offsetMs)
+      const userTodayStr = userLocalNow.toISOString().split("T")[0]
+
+      // Check if date is in the past (using user's local date)
+      if (departureDate < userTodayStr) {
         return NextResponse.json(
           { error: "Cannot schedule a ride in the past" },
           { status: 400 }
@@ -65,9 +71,9 @@ export async function POST(request: NextRequest) {
       }
 
       // If date is today, also check if the time has passed
-      if (departureDate === todayStr && departureTime) {
-        const currentTimeStr = now.toISOString().split("T")[1].substring(0, 5) // "HH:MM" in UTC
-        if (departureTime < currentTimeStr) {
+      if (departureDate === userTodayStr && departureTime) {
+        const userCurrentTimeStr = userLocalNow.toISOString().split("T")[1].substring(0, 5) // "HH:MM"
+        if (departureTime < userCurrentTimeStr) {
           return NextResponse.json(
             { error: "Cannot schedule a ride for a time that has already passed" },
             { status: 400 }
