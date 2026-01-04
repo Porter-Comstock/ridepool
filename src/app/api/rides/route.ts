@@ -23,6 +23,10 @@ export async function POST(request: NextRequest) {
       isRecurring,
       recurringDays,
       recurringUntil,
+      rideType,
+      rideRole,
+      returnDate,
+      returnTime,
     } = body
 
     // Validation
@@ -64,17 +68,29 @@ export async function POST(request: NextRequest) {
         notes: notes || null,
         isRecurring,
         recurrencePattern,
+        rideType: rideType || "ONE_WAY",
+        rideRole: rideRole || "DRIVER",
+        returnDate: returnDate ? new Date(returnDate) : null,
+        returnTime: returnTime || null,
       },
     })
 
-    // Send push notification to all users except the driver
+    // Send push notification to all users except the poster
     const dateInfo = isRecurring
       ? "Recurring ride"
       : new Date(departureDate).toLocaleDateString()
 
+    const notificationTitle = rideRole === "RIDER"
+      ? "Someone Needs a Ride"
+      : "New Ride Available"
+
+    const notificationBody = rideRole === "RIDER"
+      ? `Looking for a ride: ${origin} → ${destination} on ${dateInfo}`
+      : `${origin} → ${destination} on ${dateInfo}`
+
     sendPushToAllExcept(session.user.id, {
-      title: "New Ride Available",
-      body: `${origin} → ${destination} on ${dateInfo}`,
+      title: notificationTitle,
+      body: notificationBody,
       url: `/rides/${ride.id}`,
       data: { rideId: ride.id },
     }).catch(console.error) // Don't await, fire and forget

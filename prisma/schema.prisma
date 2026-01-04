@@ -109,6 +109,14 @@ model Ride {
   // Details
   notes       String?  // e.g., "2 bags max, no smoking"
 
+  // Trip type and role
+  rideType    RideType  @default(ONE_WAY)
+  rideRole    RideRole  @default(DRIVER)
+
+  // Return trip details (for round-trip rides)
+  returnDate  DateTime?
+  returnTime  String?
+
   // Status
   status      RideStatus @default(ACTIVE)
   createdAt   DateTime   @default(now())
@@ -130,6 +138,16 @@ enum RideStatus {
   FULL
   COMPLETED
   CANCELLED
+}
+
+enum RideType {
+  ONE_WAY
+  ROUND_TRIP
+}
+
+enum RideRole {
+  DRIVER    // "I'll be driving" - offering seats
+  RIDER     // "I need a ride" - requesting transport
 }
 
 // ============================================================================

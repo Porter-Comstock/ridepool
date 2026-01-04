@@ -78,6 +78,10 @@ export async function PATCH(
       isRecurring,
       recurringDays,
       recurringUntil,
+      rideType,
+      rideRole,
+      returnDate,
+      returnTime,
     } = body
 
     // Build recurrence pattern JSON
@@ -97,6 +101,10 @@ export async function PATCH(
         notes: notes || null,
         isRecurring,
         recurrencePattern,
+        rideType: rideType || undefined,
+        rideRole: rideRole || undefined,
+        returnDate: returnDate ? new Date(returnDate) : null,
+        returnTime: returnTime || null,
       },
     })
 
