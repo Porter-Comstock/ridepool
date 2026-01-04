@@ -30,6 +30,30 @@ interface DashboardClientProps {
   unreadMessagesCount: number
 }
 
+// Extract place name or short address from full Google Places address
+// "Syracuse Hancock International Airport, 1000 Col Eileen Collins Blvd, Syracuse, NY" → "Syracuse Hancock International Airport"
+// "123 Main St, Hamilton, NY 13346, USA" → "123 Main St, Hamilton"
+function formatLocation(fullAddress: string): string {
+  if (!fullAddress) return ""
+
+  const parts = fullAddress.split(",").map(p => p.trim())
+
+  if (parts.length === 0) return fullAddress
+
+  const firstPart = parts[0]
+
+  // Check if first part starts with a number (it's a street address, not a place name)
+  const startsWithNumber = /^\d/.test(firstPart)
+
+  if (startsWithNumber) {
+    // It's an address - return street + city (first two parts)
+    return parts.slice(0, 2).join(", ")
+  } else {
+    // It's a place name - return just the name
+    return firstPart
+  }
+}
+
 export function DashboardClient({
   userName,
   availableRides,
@@ -226,7 +250,7 @@ export function DashboardClient({
                           <span className="text-lg">🙋</span>
                         )}
                         <span className="font-medium text-gray-900">
-                          {ride.origin} → {ride.destination}
+                          {formatLocation(ride.origin)} → {formatLocation(ride.destination)}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500">

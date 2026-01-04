@@ -5,6 +5,19 @@ import Link from "next/link"
 import { RequestRideButton } from "./request-button"
 import { CancelRideButton } from "./cancel-button"
 
+// Extract place name or short address from full Google Places address
+function formatLocation(fullAddress: string): string {
+  if (!fullAddress) return ""
+  const parts = fullAddress.split(",").map(p => p.trim())
+  if (parts.length === 0) return fullAddress
+  const firstPart = parts[0]
+  const startsWithNumber = /^\d/.test(firstPart)
+  if (startsWithNumber) {
+    return parts.slice(0, 2).join(", ")
+  }
+  return firstPart
+}
+
 export default async function RideDetailPage({
   params,
 }: {
@@ -89,7 +102,7 @@ export default async function RideDetailPage({
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {ride.origin} → {ride.destination}
+                  {formatLocation(ride.origin)} → {formatLocation(ride.destination)}
                 </h1>
                 <p className="text-gray-600 mt-2">
                   {ride.isRecurring ? (

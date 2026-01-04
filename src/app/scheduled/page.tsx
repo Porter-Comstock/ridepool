@@ -3,6 +3,19 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 
+// Extract place name or short address from full Google Places address
+function formatLocation(fullAddress: string): string {
+  if (!fullAddress) return ""
+  const parts = fullAddress.split(",").map(p => p.trim())
+  if (parts.length === 0) return fullAddress
+  const firstPart = parts[0]
+  const startsWithNumber = /^\d/.test(firstPart)
+  if (startsWithNumber) {
+    return parts.slice(0, 2).join(", ")
+  }
+  return firstPart
+}
+
 export default async function ScheduledPage() {
   const session = await auth()
 
@@ -132,7 +145,7 @@ export default async function ScheduledPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-gray-900">
-                          {ride.origin} → {ride.destination}
+                          {formatLocation(ride.origin)} → {formatLocation(ride.destination)}
                         </span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ride.status)}`}>
                           {ride.status}
@@ -219,7 +232,7 @@ export default async function ScheduledPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-gray-900">
-                          {request.ride.origin} → {request.ride.destination}
+                          {formatLocation(request.ride.origin)} → {formatLocation(request.ride.destination)}
                         </span>
                         <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                           Confirmed
@@ -277,7 +290,7 @@ export default async function ScheduledPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-gray-900">
-                          {request.ride.origin} → {request.ride.destination}
+                          {formatLocation(request.ride.origin)} → {formatLocation(request.ride.destination)}
                         </span>
                         <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
                           Pending
