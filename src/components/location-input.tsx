@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useState, useCallback } from "react"
+import { useRef, useEffect, useCallback } from "react"
 import { useLoadScript } from "@react-google-maps/api"
 
 const libraries: ("places")[] = ["places"]
@@ -22,31 +22,21 @@ export function LocationInput({
 }: LocationInputProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
-  const [inputValue, setInputValue] = useState(value)
-  const isSelectingRef = useRef(false)
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries,
   })
 
-  // Sync external value changes
-  useEffect(() => {
-    if (!isSelectingRef.current) {
-      setInputValue(value)
-    }
-  }, [value])
-
-  // Memoize the onChange callback to prevent re-initializing autocomplete
+  // Handle place selection from autocomplete
   const handlePlaceChanged = useCallback(() => {
     const place = autocompleteRef.current?.getPlace()
     if (!place) return
 
-    // Prefer name + city for establishments, formatted_address for addresses
+    // Get the place name for establishments, or formatted address for regular addresses
     let address = ""
     if (place.name && place.formatted_address) {
       // For establishments like "Syracuse Airport", use the name
-      // Check if name is different from the street address
       const formattedParts = place.formatted_address.split(",")
       if (place.name !== formattedParts[0]?.trim()) {
         address = place.name
@@ -60,19 +50,20 @@ export function LocationInput({
     const lat = place.geometry?.location?.lat()
     const lng = place.geometry?.location?.lng()
 
-    // Set flag to prevent sync from overwriting
-    isSelectingRef.current = true
-    setInputValue(address)
-    onChange(address, lat, lng)
+    // Update the input value directly via DOM
+    if (inputRef.current) {
+      inputRef.current.value = address
+    }
 
-    // Reset flag after a short delay
-    setTimeout(() => {
-      isSelectingRef.current = false
-    }, 100)
+    // Notify parent
+    onChange(address, lat, lng)
   }, [onChange])
 
   useEffect(() => {
-    if (!isLoaded || !inputRef.current || autocompleteRef.current) return
+    if (!isLoaded || !inputRef.current) return
+
+    // Only initialize once
+    if (autocompleteRef.current) return
 
     // Initialize autocomplete
     autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
@@ -91,25 +82,29 @@ export function LocationInput({
     }
   }, [isLoaded, handlePlaceChanged])
 
-  // Handle manual input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Don't update if we're in the middle of selecting from autocomplete
-    if (isSelectingRef.current) return
+  // Sync the input value when external value changes (e.g., form reset)
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== value) {
+      inputRef.current.value = value
+    }
+  }, [value])
 
-    const newValue = e.target.value
-    setInputValue(newValue)
-    onChange(newValue)
+  // Handle manual typing
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value)
   }
+
+  const inputClassName = `w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`
 
   if (loadError) {
     return (
       <input
         type="text"
-        value={inputValue}
+        defaultValue={value}
         onChange={handleInputChange}
         placeholder={placeholder}
         required={required}
-        className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+        className={inputClassName}
       />
     )
   }
@@ -118,8 +113,7 @@ export function LocationInput({
     return (
       <input
         type="text"
-        value={inputValue}
-        onChange={handleInputChange}
+        defaultValue={value}
         placeholder={placeholder}
         required={required}
         disabled
@@ -132,11 +126,11 @@ export function LocationInput({
     <input
       ref={inputRef}
       type="text"
-      value={inputValue}
+      defaultValue={value}
       onChange={handleInputChange}
       placeholder={placeholder}
       required={required}
-      className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+      className={inputClassName}
     />
   )
 }

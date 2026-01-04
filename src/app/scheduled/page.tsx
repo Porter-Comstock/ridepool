@@ -23,10 +23,11 @@ export default async function ScheduledPage() {
     redirect("/login")
   }
 
-  // Fetch rides the user is driving
-  const myRides = await prisma.ride.findMany({
+  // Fetch rides where user is DRIVING (posted with rideRole = DRIVER)
+  const ridesImDriving = await prisma.ride.findMany({
     where: {
       driverId: session.user.id,
+      rideRole: "DRIVER",
     },
     include: {
       requests: {
@@ -45,8 +46,31 @@ export default async function ScheduledPage() {
     ],
   })
 
-  // Fetch rides the user is a passenger on (accepted requests)
-  const passengerRides = await prisma.rideRequest.findMany({
+  // Fetch rides where user NEEDS A RIDE (posted with rideRole = RIDER)
+  const ridesImLookingFor = await prisma.ride.findMany({
+    where: {
+      driverId: session.user.id,
+      rideRole: "RIDER",
+    },
+    include: {
+      requests: {
+        where: { status: "ACCEPTED" },
+        include: {
+          passenger: {
+            select: { id: true, name: true, image: true },
+          },
+        },
+      },
+    },
+    orderBy: [
+      { status: "asc" },
+      { departureDate: "asc" },
+      { createdAt: "desc" },
+    ],
+  })
+
+  // Fetch rides the user has joined as a passenger (accepted requests on OTHER people's rides)
+  const ridesImJoining = await prisma.rideRequest.findMany({
     where: {
       passengerId: session.user.id,
       status: "ACCEPTED",
@@ -129,13 +153,13 @@ export default async function ScheduledPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="text-xl">🚗</span> Rides I&apos;m Driving
           </h2>
-          {myRides.length === 0 ? (
+          {ridesImDriving.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              You haven&apos;t posted any rides yet.
+              You haven&apos;t posted any rides as a driver yet.
             </div>
           ) : (
             <div className="space-y-3">
-              {myRides.map((ride) => (
+              {ridesImDriving.map((ride) => (
                 <Link
                   key={ride.id}
                   href={`/rides/${ride.id}`}
@@ -211,18 +235,77 @@ export default async function ScheduledPage() {
           )}
         </section>
 
-        {/* Rides I'm a Passenger On */}
+        {/* Rides I'm Looking For (Posted as RIDER) */}
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="text-xl">🙋</span> Rides I&apos;m Looking For
+          </h2>
+          {ridesImLookingFor.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+              You haven&apos;t posted any ride requests yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {ridesImLookingFor.map((ride) => (
+                <Link
+                  key={ride.id}
+                  href={`/rides/${ride.id}`}
+                  className="block bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-gray-900">
+                          {formatLocation(ride.origin)} → {formatLocation(ride.destination)}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(ride.status)}`}>
+                          {ride.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        {ride.isRecurring ? "Recurring" : formatDate(ride.departureDate)} at {ride.departureTime}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          ride.rideType === "ROUND_TRIP"
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}>
+                          {ride.rideType === "ROUND_TRIP" ? "Round-trip" : "One-way"}
+                        </span>
+                        <span>•</span>
+                        <span>Need {ride.seatsAvailable} seat{ride.seatsAvailable !== 1 ? "s" : ""}</span>
+                      </div>
+                      {ride.requests.length > 0 && (
+                        <div className="mt-3">
+                          <span className="text-xs text-green-600 font-medium">
+                            {ride.requests.length} driver{ride.requests.length !== 1 ? "s" : ""} offered to help!
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Rides I'm Joining (as passenger) */}
         <section>
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <span className="text-xl">🎫</span> Rides I&apos;m Joining
           </h2>
-          {passengerRides.length === 0 ? (
+          {ridesImJoining.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
               You haven&apos;t joined any rides yet.
             </div>
           ) : (
             <div className="space-y-3">
-              {passengerRides.map((request) => (
+              {ridesImJoining.map((request) => (
                 <Link
                   key={request.id}
                   href={`/rides/${request.ride.id}`}
