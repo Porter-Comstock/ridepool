@@ -241,67 +241,74 @@ export function DashboardClient({
                   href={`/rides/${ride.id}`}
                   className="block bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {ride.rideRole === "DRIVER" ? (
-                          <span className="text-lg">🚗</span>
-                        ) : (
-                          <span className="text-lg">🙋</span>
-                        )}
-                        <span className="font-medium text-gray-900">
-                          {formatLocation(ride.origin)} → {formatLocation(ride.destination)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-500">
-                        {ride.departureDate
-                          ? new Date(ride.departureDate).toLocaleDateString("en-US", {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                            })
-                          : "Flexible date"}{" "}
-                        at {ride.departureTime}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          ride.rideType === "ROUND_TRIP"
-                            ? "bg-purple-100 text-purple-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}>
-                          {ride.rideType === "ROUND_TRIP" ? "Round-trip" : "One-way"}
-                        </span>
-                        <span>•</span>
-                        <span>{ride.seatsAvailable} seat{ride.seatsAvailable !== 1 ? "s" : ""}</span>
-                        {ride.pricePerSeat && (
-                          <>
-                            <span>•</span>
-                            <span>${ride.pricePerSeat}/seat</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right ml-4">
-                      <div className="flex items-center gap-2">
-                        {ride.driver.image ? (
-                          <img
-                            src={ride.driver.image}
-                            alt=""
-                            className="w-8 h-8 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                            <span className="text-xs font-medium text-gray-600">
-                              {ride.driver.name?.[0] || "?"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                  {/* Header with emoji and driver */}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-lg">
+                      {ride.rideRole === "DRIVER" ? "🚗" : "🙋"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {ride.driver.image ? (
+                        <img
+                          src={ride.driver.image}
+                          alt=""
+                          className="w-6 h-6 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-xs font-medium text-gray-600">
+                            {ride.driver.name?.[0] || "?"}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-xs text-gray-500">
                         {ride.driver.name?.split(" ")[0] || "User"}
-                      </p>
+                      </span>
                     </div>
                   </div>
+
+                  {/* Origin and Destination - full width */}
+                  <p className="font-medium text-gray-900 mb-1">
+                    {formatLocation(ride.origin)}
+                  </p>
+                  <p className="text-gray-500 text-sm mb-2">
+                    ↓ to
+                  </p>
+                  <p className="font-medium text-gray-900 mb-3">
+                    {formatLocation(ride.destination)}
+                  </p>
+
+                  {/* Date/Time */}
+                  <p className="text-sm text-gray-500 mb-2">
+                    {ride.departureDate
+                      ? new Date(ride.departureDate).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "Flexible date"}{" "}
+                    at {ride.departureTime}
+                  </p>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      ride.rideType === "ROUND_TRIP"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}>
+                      {ride.rideType === "ROUND_TRIP" ? "Round-trip" : "One-way"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                      {ride.seatsAvailable} seat{ride.seatsAvailable !== 1 ? "s" : ""}
+                    </span>
+                    {ride.pricePerSeat && (
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        ${ride.pricePerSeat}/seat
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Action button */}
                   <div className="mt-3 flex justify-end">
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       ride.rideRole === "DRIVER"
