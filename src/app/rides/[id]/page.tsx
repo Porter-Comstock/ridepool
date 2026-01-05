@@ -64,12 +64,12 @@ export default async function RideDetailPage({
   const isDriver = ride.driverId === session.user.id
   const seatsRemaining = ride.seatsAvailable - ride.requests.length
 
-  // Check if user already has a pending or accepted request
+  // Check if user already has a pending, countered, or accepted request
   const existingRequest = await prisma.rideRequest.findFirst({
     where: {
       rideId: ride.id,
       passengerId: session.user.id,
-      status: { in: ["PENDING", "ACCEPTED"] },
+      status: { in: ["PENDING", "COUNTERED", "ACCEPTED"] },
     },
   })
 
@@ -238,14 +238,30 @@ export default async function RideDetailPage({
               </div>
             ) : existingRequest ? (
               <div className="text-center">
-                <p className={`font-medium ${existingRequest.status === "ACCEPTED" ? "text-green-600" : "text-yellow-600"}`}>
-                  {existingRequest.status === "ACCEPTED"
-                    ? "You're confirmed for this ride!"
-                    : "Your request is pending"}
-                </p>
+                {existingRequest.status === "ACCEPTED" ? (
+                  <p className="font-medium text-green-600">
+                    You&apos;re confirmed for this ride!
+                  </p>
+                ) : existingRequest.status === "COUNTERED" ? (
+                  <div>
+                    <p className="font-medium text-amber-600 mb-2">
+                      Counter-offer received!
+                    </p>
+                    <Link
+                      href="/requests"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      View and respond to counter-offer →
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="font-medium text-yellow-600">
+                    Your request is pending
+                  </p>
+                )}
               </div>
             ) : seatsRemaining > 0 ? (
-              <RequestRideButton rideId={ride.id} />
+              <RequestRideButton rideId={ride.id} originalPrice={ride.pricePerSeat} />
             ) : (
               <p className="text-center text-red-600 font-medium">
                 This ride is full

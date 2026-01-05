@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { requestId, action } = await request.json()
+    const { requestId, action, counterPrice } = await request.json()
 
     if (!requestId || !action) {
       return NextResponse.json(
@@ -20,9 +20,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!["accept", "decline"].includes(action)) {
+    if (!["accept", "decline", "counter"].includes(action)) {
       return NextResponse.json(
         { error: "Invalid action" },
+        { status: 400 }
+      )
+    }
+
+    // Counter action requires a counterPrice
+    if (action === "counter" && (counterPrice === undefined || counterPrice === null || counterPrice === "")) {
+      return NextResponse.json(
+        { error: "Counter price is required for counter action" },
         { status: 400 }
       )
     }
@@ -47,33 +55,77 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update the request status
-    const newStatus = action === "accept" ? "ACCEPTED" : "DECLINED"
-
-    const updatedRequest = await prisma.rideRequest.update({
-      where: { id: requestId },
-      data: { status: newStatus },
-    })
-
-    // If accepted, create a welcome message and notify the passenger
+    // Handle different actions
     if (action === "accept") {
+      // Accept the proposed price (or original price if they accepted it)
+      const agreedPrice = rideRequest.proposedPrice ?? rideRequest.ride.pricePerSeat
+
+      const updatedRequest = await prisma.rideRequest.update({
+        where: { id: requestId },
+        data: {
+          status: "ACCEPTED",
+          agreedPrice,
+        },
+      })
+
+      // Create welcome message
+      const priceInfo = agreedPrice !== null ? ` at $${agreedPrice}/seat` : ""
       await prisma.message.create({
         data: {
           senderId: session.user.id,
           receiverId: rideRequest.passengerId,
           rideId: rideRequest.rideId,
-          content: `Your ride request from ${rideRequest.ride.origin} to ${rideRequest.ride.destination} has been accepted! Feel free to message me to coordinate.`,
+          content: `Your ride request from ${rideRequest.ride.origin} to ${rideRequest.ride.destination} has been accepted${priceInfo}! Feel free to message me to coordinate.`,
         },
       })
 
       // Send push notification to the passenger
       sendPushNotification(rideRequest.passengerId, {
         title: "Request Accepted!",
-        body: `${session.user.name || "Driver"} accepted your ride to ${rideRequest.ride.destination}`,
+        body: `${session.user.name || "Driver"} accepted your ride to ${rideRequest.ride.destination}${priceInfo}`,
         url: `/messages/${session.user.id}`,
         data: { rideId: rideRequest.rideId, driverId: session.user.id },
       }).catch(console.error)
+
+      return NextResponse.json(updatedRequest)
     }
+
+    if (action === "counter") {
+      // Send counter-offer
+      const parsedCounterPrice = parseFloat(counterPrice)
+
+      const updatedRequest = await prisma.rideRequest.update({
+        where: { id: requestId },
+        data: {
+          status: "COUNTERED",
+          counterPrice: parsedCounterPrice,
+        },
+      })
+
+      // Send push notification to the passenger about counter-offer
+      sendPushNotification(rideRequest.passengerId, {
+        title: "Counter-Offer Received",
+        body: `${session.user.name || "Driver"} countered with $${parsedCounterPrice}/seat for the ride to ${rideRequest.ride.destination}`,
+        url: "/requests",
+        data: { requestId: rideRequest.id, rideId: rideRequest.rideId },
+      }).catch(console.error)
+
+      return NextResponse.json(updatedRequest)
+    }
+
+    // Decline
+    const updatedRequest = await prisma.rideRequest.update({
+      where: { id: requestId },
+      data: { status: "DECLINED" },
+    })
+
+    // Send notification about decline
+    sendPushNotification(rideRequest.passengerId, {
+      title: "Request Declined",
+      body: `Your request for the ride to ${rideRequest.ride.destination} was declined`,
+      url: "/dashboard",
+      data: { rideId: rideRequest.rideId },
+    }).catch(console.error)
 
     return NextResponse.json(updatedRequest)
   } catch (error) {

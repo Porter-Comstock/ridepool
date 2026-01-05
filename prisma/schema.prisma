@@ -165,6 +165,11 @@ model RideRequest {
   seatsRequested Int      @default(1)
   message        String?  // Initial message from passenger
 
+  // Price negotiation fields
+  proposedPrice  Float?   // Price proposed by requester (null = accepts original)
+  counterPrice   Float?   // Counter-offer from trip maker
+  agreedPrice    Float?   // Final agreed price (set when confirmed)
+
   status      RequestStatus @default(PENDING)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -180,10 +185,11 @@ model RideRequest {
 }
 
 enum RequestStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  CANCELLED
+  PENDING     // Waiting for trip maker to review
+  COUNTERED   // Trip maker countered, waiting for requester response
+  ACCEPTED    // Both parties agreed, ride confirmed
+  DECLINED    // Trip maker declined the request
+  CANCELLED   // Requester cancelled or declined counter-offer
 }
 
 // ============================================================================

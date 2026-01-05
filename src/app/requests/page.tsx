@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { RequestActions } from "./request-actions"
+import { CounterResponseActions } from "./counter-response-actions"
 
 export default async function RequestsPage() {
   const session = await auth()
@@ -26,6 +27,7 @@ export default async function RequestsPage() {
           departureDate: true,
           departureTime: true,
           isRecurring: true,
+          pricePerSeat: true,
         },
       },
       passenger: {
@@ -128,11 +130,24 @@ export default async function RequestsPage() {
                             &quot;{request.message}&quot;
                           </p>
                         )}
+                        {/* Price negotiation info */}
+                        <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-gray-500">
+                            Your price: {request.ride.pricePerSeat ? `$${request.ride.pricePerSeat}/seat` : "Free"}
+                          </p>
+                          {request.proposedPrice !== null && request.proposedPrice !== request.ride.pricePerSeat && (
+                            <p className="text-xs font-medium text-amber-600">
+                              Their offer: ${request.proposedPrice}/seat
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <RequestActions
                       requestId={request.id}
                       passengerId={request.passenger.id}
+                      originalPrice={request.ride.pricePerSeat}
+                      proposedPrice={request.proposedPrice}
                     />
                   </div>
                 </div>
@@ -161,8 +176,8 @@ export default async function RequestsPage() {
             <div className="space-y-3">
               {myRequests.map((request) => (
                 <div key={request.id} className="bg-white rounded-lg shadow p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
                       <p className="font-medium text-gray-900">
                         {request.ride.origin} → {request.ride.destination}
                       </p>
@@ -174,20 +189,48 @@ export default async function RequestsPage() {
                           ? `Recurring at ${request.ride.departureTime}`
                           : `${request.ride.departureDate?.toLocaleDateString()} at ${request.ride.departureTime}`}
                       </p>
+                      {/* Price info for non-pending requests */}
+                      {request.status === "ACCEPTED" && request.agreedPrice !== null && (
+                        <p className="text-xs text-green-600 mt-2">
+                          Agreed price: ${request.agreedPrice}/seat
+                        </p>
+                      )}
+                      {/* Counter-offer section */}
+                      {request.status === "COUNTERED" && (
+                        <div className="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                          <p className="text-sm font-medium text-amber-800 mb-2">
+                            Counter-offer received!
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            Your offer: ${request.proposedPrice}/seat
+                          </p>
+                          <p className="text-xs font-medium text-amber-700">
+                            Their counter: ${request.counterPrice}/seat
+                          </p>
+                          <div className="mt-3">
+                            <CounterResponseActions
+                              requestId={request.id}
+                              counterPrice={request.counterPrice!}
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-right">
+                    <div className="text-right ml-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           request.status === "ACCEPTED"
                             ? "bg-green-100 text-green-800"
                             : request.status === "PENDING"
                             ? "bg-yellow-100 text-yellow-800"
+                            : request.status === "COUNTERED"
+                            ? "bg-amber-100 text-amber-800"
                             : request.status === "DECLINED"
                             ? "bg-red-100 text-red-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {request.status}
+                        {request.status === "COUNTERED" ? "Counter-Offer" : request.status}
                       </span>
                       {request.status === "ACCEPTED" && (
                         <Link
