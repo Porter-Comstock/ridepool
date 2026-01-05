@@ -40,11 +40,11 @@ export default async function ProfilePage() {
       <header className="bg-white border-b">
         <div className="max-w-2xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#821019] rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-            </div>
+            <img
+              src="/icons/icon-192x192.png"
+              alt="Gate Rides"
+              className="w-8 h-8"
+            />
             <span className="text-xl font-bold text-[#821019]">Gate Rides</span>
           </Link>
           <Link
