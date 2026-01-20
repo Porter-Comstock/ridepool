@@ -28,6 +28,7 @@ interface DashboardClientProps {
   availableRides: Ride[]
   pendingRequestsCount: number
   unreadMessagesCount: number
+  initialTab?: "bulletin" | "create"
 }
 
 // Extract place name or short address from full Google Places address
@@ -65,8 +66,9 @@ export function DashboardClient({
   availableRides,
   pendingRequestsCount,
   unreadMessagesCount,
+  initialTab = "create",
 }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<"bulletin" | "create">("create")
+  const [activeTab, setActiveTab] = useState<"bulletin" | "create">(initialTab)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -298,7 +300,7 @@ export function DashboardClient({
                   </p>
 
                   {/* Date/Time */}
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-gray-900 mb-2">
                     {ride.departureDate
                       ? new Date(ride.departureDate).toLocaleDateString("en-US", {
                           weekday: "short",
@@ -525,7 +527,7 @@ export function DashboardClient({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price per Seat (optional)
+                    Propose your Price (optional)
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-2 text-gray-500">$</span>

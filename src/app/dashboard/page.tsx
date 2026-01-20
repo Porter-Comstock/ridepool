@@ -3,12 +3,19 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { DashboardClient } from "@/components/dashboard-client"
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>
+}) {
   const session = await auth()
 
   if (!session?.user) {
     redirect("/login")
   }
+
+  const params = await searchParams
+  const initialTab = params.tab === "bulletin" ? "bulletin" : "create"
 
   // Fetch available rides from OTHER users (for the bulletin)
   // Show all active rides - future rides, recurring rides, or rides with no date set
@@ -78,6 +85,7 @@ export default async function DashboardPage() {
       availableRides={transformedRides}
       pendingRequestsCount={pendingRequestsCount}
       unreadMessagesCount={unreadMessagesCount}
+      initialTab={initialTab}
     />
   )
 }

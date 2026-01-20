@@ -133,7 +133,7 @@ export default async function RidesPage({
                         <p className="font-semibold text-gray-900 text-lg">
                           {ride.origin} → {ride.destination}
                         </p>
-                        <p className="text-gray-600 mt-1">
+                        <p className="text-gray-900 mt-1">
                           {ride.isRecurring ? (
                             <>
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mr-2">
