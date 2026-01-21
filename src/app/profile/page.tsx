@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { ProfileForm } from "./profile-form"
+import { StripeConnectButton } from "@/components/stripe-connect-button"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -97,6 +98,12 @@ export default async function ProfilePage() {
               <p className="text-sm text-gray-500">Rides Joined</p>
             </div>
           </div>
+        </div>
+
+        {/* Driver Payments */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Driver Payments</h3>
+          <StripeConnectButton />
         </div>
 
         {/* Edit Form */}

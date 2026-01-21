@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import { PaymentStatusBadge } from "@/components/payment-status-badge"
 
 // Extract place name or short address from full Google Places address
 function formatLocation(fullAddress: string): string {
@@ -87,7 +88,28 @@ export default async function ScheduledPage() {
     orderBy: {
       ride: { departureDate: "asc" },
     },
-  })
+  }) as Array<{
+    id: string
+    rideId: string
+    passengerId: string
+    seatsRequested: number
+    agreedPrice: number | null
+    paymentStatus: string
+    paymentAmount: number | null
+    ride: {
+      id: string
+      origin: string
+      destination: string
+      departureDate: Date | null
+      departureTime: string
+      isRecurring: boolean
+      driver: {
+        id: string
+        name: string | null
+        image: string | null
+      }
+    }
+  }>
 
   // Pending requests the user has made
   const pendingRequests = await prisma.rideRequest.findMany({
@@ -344,6 +366,14 @@ export default async function ScheduledPage() {
                             {request.ride.driver.name?.split(" ")[0] || "User"}
                           </span>
                         </div>
+                      </div>
+                      <div className="mt-2">
+                        <PaymentStatusBadge
+                          rideRequestId={request.id}
+                          paymentStatus={request.paymentStatus}
+                          paymentAmount={request.paymentAmount}
+                          agreedPrice={request.agreedPrice}
+                        />
                       </div>
                     </div>
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

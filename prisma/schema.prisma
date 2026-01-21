@@ -24,6 +24,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Stripe Connect (for drivers receiving payments)
+  stripeConnectAccountId          String?
+  stripeConnectOnboardingComplete Boolean @default(false)
+  stripeConnectChargesEnabled     Boolean @default(false)
+
+  // Stripe Customer (for riders making payments)
+  stripeCustomerId String?
+
   // Relations
   accounts          Account[]
   sessions          Session[]
@@ -170,6 +178,17 @@ model RideRequest {
   counterPrice   Float?   // Counter-offer from trip maker
   agreedPrice    Float?   // Final agreed price (set when confirmed)
 
+  // Payment fields (Stripe)
+  stripeSetupIntentId   String?
+  stripePaymentIntentId String?
+  stripePaymentMethodId String?
+  paymentStatus         PaymentStatus @default(PENDING)
+  paymentAmount         Float?        // Total amount charged (agreedPrice + platform fee)
+  platformFee           Float         @default(5.00)
+  driverPayout          Float?        // Amount sent to driver
+  paymentFailureReason  String?
+  chargedAt             DateTime?
+
   status      RequestStatus @default(PENDING)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -182,6 +201,7 @@ model RideRequest {
   @@index([rideId])
   @@index([passengerId])
   @@index([status])
+  @@index([paymentStatus])
 }
 
 enum RequestStatus {
@@ -190,6 +210,16 @@ enum RequestStatus {
   ACCEPTED    // Both parties agreed, ride confirmed
   DECLINED    // Trip maker declined the request
   CANCELLED   // Requester cancelled or declined counter-offer
+}
+
+enum PaymentStatus {
+  PENDING       // Card not yet saved
+  CARD_SAVED    // Card on file, waiting for departure
+  PROCESSING    // Payment is being processed
+  SUCCEEDED     // Payment completed successfully
+  FAILED        // Payment failed
+  REFUNDED      // Payment was refunded
+  NOT_REQUIRED  // No payment needed (e.g., free ride without Stripe driver)
 }
 
 // ============================================================================
