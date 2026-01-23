@@ -261,7 +261,7 @@ export default async function RideDetailPage({
                 )}
               </div>
             ) : seatsRemaining > 0 ? (
-              <RequestRideButton rideId={ride.id} originalPrice={ride.pricePerSeat} />
+              <RequestRideButton rideId={ride.id} originalPrice={ride.pricePerSeat} rideRole={ride.rideRole} />
             ) : (
               <p className="text-center text-red-600 font-medium">
                 This ride is full

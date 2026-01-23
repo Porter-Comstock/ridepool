@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation"
 interface RequestRideButtonProps {
   rideId: string
   originalPrice: number | null
+  rideRole: "DRIVER" | "RIDER"
 }
 
-export function RequestRideButton({ rideId, originalPrice }: RequestRideButtonProps) {
+export function RequestRideButton({ rideId, originalPrice, rideRole }: RequestRideButtonProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState("")
@@ -47,13 +48,16 @@ export function RequestRideButton({ rideId, originalPrice }: RequestRideButtonPr
     parseFloat(proposedPrice) !== originalPrice &&
     !(proposedPrice === "0" && originalPrice === null)
 
+  // Button text based on ride role
+  const buttonText = rideRole === "DRIVER" ? "Request to Join" : "Offer to Drive"
+
   if (!showForm) {
     return (
       <button
         onClick={() => setShowForm(true)}
         className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
       >
-        Request to Join
+        {buttonText}
       </button>
     )
   }
@@ -100,7 +104,7 @@ export function RequestRideButton({ rideId, originalPrice }: RequestRideButtonPr
           Message (optional)
         </label>
         <textarea
-          placeholder="Add a message for the driver"
+          placeholder={rideRole === "DRIVER" ? "Add a message for the driver" : "Add a message for the rider"}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           rows={2}
           value={message}
