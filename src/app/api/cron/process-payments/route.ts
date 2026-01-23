@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       include: {
         ride: {
           include: {
-            driver: true,
+            owner: true,
           },
         },
         passenger: true,
@@ -68,14 +68,14 @@ export async function GET(request: NextRequest) {
         const totalAmountCents = dollarsToCents(agreedPrice) + PLATFORM_FEE_CENTS
         const driverPayoutCents = dollarsToCents(agreedPrice)
 
-        // Check if driver has Stripe Connect
-        const driverHasStripe = request.ride.driver.stripeConnectAccountId &&
-          request.ride.driver.stripeConnectChargesEnabled
+        // Check if owner has Stripe Connect
+        const ownerHasStripe = request.ride.owner.stripeConnectAccountId &&
+          request.ride.owner.stripeConnectChargesEnabled
 
         let paymentIntent
 
-        if (driverHasStripe && driverPayoutCents > 0) {
-          // Create payment with destination charge to driver
+        if (ownerHasStripe && driverPayoutCents > 0) {
+          // Create payment with destination charge to owner
           paymentIntent = await stripe.paymentIntents.create({
             amount: totalAmountCents,
             currency: "usd",
@@ -85,17 +85,17 @@ export async function GET(request: NextRequest) {
             confirm: true,
             application_fee_amount: PLATFORM_FEE_CENTS,
             transfer_data: {
-              destination: request.ride.driver.stripeConnectAccountId!,
+              destination: request.ride.owner.stripeConnectAccountId!,
             },
             metadata: {
               rideRequestId: request.id,
               rideId: request.rideId,
               passengerId: request.passengerId,
-              driverId: request.ride.driverId,
+              ownerId: request.ride.ownerId,
             },
           })
         } else {
-          // Driver doesn't have Stripe or it's a free ride - platform keeps all
+          // Owner doesn't have Stripe or it's a free ride - platform keeps all
           paymentIntent = await stripe.paymentIntents.create({
             amount: totalAmountCents,
             currency: "usd",
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
               rideRequestId: request.id,
               rideId: request.rideId,
               passengerId: request.passengerId,
-              driverId: request.ride.driverId,
+              ownerId: request.ride.ownerId,
             },
           })
         }

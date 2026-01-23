@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 })
     }
 
-    // Only the ride driver can respond
-    if (rideRequest.ride.driverId !== session.user.id) {
+    // Only the ride owner can respond
+    if (rideRequest.ride.ownerId !== session.user.id) {
       return NextResponse.json(
-        { error: "Only the driver can respond to requests" },
+        { error: "Only the owner can respond to requests" },
         { status: 403 }
       )
     }
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         title: "Request Accepted!",
         body: `${session.user.name || "Driver"} accepted your ride to ${rideRequest.ride.destination}${priceInfo}`,
         url: `/messages/${session.user.id}`,
-        data: { rideId: rideRequest.rideId, driverId: session.user.id },
+        data: { rideId: rideRequest.rideId, ownerId: session.user.id },
       }).catch(console.error)
 
       return NextResponse.json(updatedRequest)

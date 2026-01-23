@@ -16,7 +16,7 @@ interface Ride {
   isRecurring: boolean
   rideType: "ONE_WAY" | "ROUND_TRIP"
   rideRole: "DRIVER" | "RIDER"
-  driver: {
+  owner: {
     id: string
     name: string | null
     image: string | null
@@ -266,27 +266,27 @@ export function DashboardClient({
                   href={`/rides/${ride.id}`}
                   className="block bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow"
                 >
-                  {/* Header with emoji and driver */}
+                  {/* Header with emoji and poster */}
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-lg">
                       {ride.rideRole === "DRIVER" ? "🚗" : "🙋"}
                     </span>
                     <div className="flex items-center gap-2">
-                      {ride.driver.image ? (
+                      {ride.owner.image ? (
                         <img
-                          src={ride.driver.image}
+                          src={ride.owner.image}
                           alt=""
                           className="w-6 h-6 rounded-full"
                         />
                       ) : (
                         <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
                           <span className="text-xs font-medium text-gray-600">
-                            {ride.driver.name?.[0] || "?"}
+                            {ride.owner.name?.[0] || "?"}
                           </span>
                         </div>
                       )}
                       <span className="text-xs text-gray-500">
-                        {ride.driver.name?.split(" ")[0] || "User"}
+                        {ride.owner.name?.split(" ")[0] || "User"}
                       </span>
                     </div>
                   </div>

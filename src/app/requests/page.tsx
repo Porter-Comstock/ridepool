@@ -15,7 +15,7 @@ export default async function RequestsPage() {
   // Get pending requests for rides the user has posted
   const incomingRequests = await prisma.rideRequest.findMany({
     where: {
-      ride: { driverId: session.user.id },
+      ride: { ownerId: session.user.id },
       status: "PENDING",
     },
     include: {
@@ -50,7 +50,7 @@ export default async function RequestsPage() {
     include: {
       ride: {
         include: {
-          driver: {
+          owner: {
             select: {
               id: true,
               name: true,
@@ -182,7 +182,7 @@ export default async function RequestsPage() {
                         {request.ride.origin} → {request.ride.destination}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        Driver: {request.ride.driver.name || "Anonymous"}
+                        Posted by: {request.ride.owner.name || "Anonymous"}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {request.ride.isRecurring
@@ -234,10 +234,10 @@ export default async function RequestsPage() {
                       </span>
                       {request.status === "ACCEPTED" && (
                         <Link
-                          href={`/messages/${request.ride.driver.id}`}
+                          href={`/messages/${request.ride.owner.id}`}
                           className="block mt-2 text-sm text-blue-600 hover:text-blue-700"
                         >
-                          Message driver
+                          Send message
                         </Link>
                       )}
                     </div>

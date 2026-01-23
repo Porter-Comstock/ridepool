@@ -28,7 +28,7 @@ export default async function RidesPage({
   const where: Record<string, unknown> = {
     status: "ACTIVE",
     // Don't show user's own rides
-    driverId: { not: session.user.id },
+    ownerId: { not: session.user.id },
   }
 
   if (origin) {
@@ -63,7 +63,7 @@ export default async function RidesPage({
   const rides = await prisma.ride.findMany({
     where,
     include: {
-      driver: {
+      owner: {
         select: {
           id: true,
           name: true,
@@ -154,9 +154,9 @@ export default async function RidesPage({
                         </p>
                         <div className="flex items-center gap-3 mt-3">
                           <div className="flex items-center gap-2">
-                            {ride.driver.image ? (
+                            {ride.owner.image ? (
                               <img
-                                src={ride.driver.image}
+                                src={ride.owner.image}
                                 alt=""
                                 className="w-6 h-6 rounded-full"
                               />
@@ -164,7 +164,7 @@ export default async function RidesPage({
                               <div className="w-6 h-6 rounded-full bg-gray-300" />
                             )}
                             <span className="text-sm text-gray-600">
-                              {ride.driver.name || "Anonymous"}
+                              {ride.owner.name || "Anonymous"}
                             </span>
                           </div>
                         </div>

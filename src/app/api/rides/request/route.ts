@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Can't request your own ride
-    if (ride.driverId === session.user.id) {
+    if (ride.ownerId === session.user.id) {
       return NextResponse.json({ error: "You cannot request your own ride" }, { status: 400 })
     }
 
@@ -97,18 +97,18 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Create welcome message from driver to passenger
+      // Create welcome message from owner to passenger
       await prisma.message.create({
         data: {
-          senderId: ride.driverId,
+          senderId: ride.ownerId,
           receiverId: session.user.id,
           rideId: ride.id,
           content: `Your ride request from ${ride.origin} to ${ride.destination} has been automatically confirmed! Feel free to message me to coordinate.`,
         },
       })
 
-      // Notify the driver about the auto-confirmed request
-      sendPushNotification(ride.driverId, {
+      // Notify the owner about the auto-confirmed request
+      sendPushNotification(ride.ownerId, {
         title: "Ride Request Auto-Confirmed",
         body: `${session.user.name || "Someone"} accepted your price and joined your ride to ${ride.destination}`,
         url: "/scheduled",
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       sendPushNotification(session.user.id, {
         title: "Ride Confirmed!",
         body: `You're confirmed for the ride to ${ride.destination}`,
-        url: `/messages/${ride.driverId}`,
+        url: `/messages/${ride.ownerId}`,
         data: { rideId },
       }).catch(console.error)
 
@@ -138,11 +138,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Notify the driver about the new request with different price
+    // Notify the owner about the new request with different price
     const priceInfo = parsedProposedPrice !== null
       ? ` (offering $${parsedProposedPrice}/seat)`
       : ""
-    sendPushNotification(ride.driverId, {
+    sendPushNotification(ride.ownerId, {
       title: "New Ride Request",
       body: `${session.user.name || "Someone"} wants to join your ride to ${ride.destination}${priceInfo}`,
       url: "/requests",

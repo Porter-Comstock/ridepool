@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     const ride = await prisma.ride.create({
       data: {
-        driverId: session.user.id,
+        ownerId: session.user.id,
         origin,
         destination,
         departureDate: isRecurring ? null : new Date(departureDate),
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
     const rides = await prisma.ride.findMany({
       where,
       include: {
-        driver: {
+        owner: {
           select: {
             id: true,
             name: true,

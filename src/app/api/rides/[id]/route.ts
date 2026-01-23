@@ -19,7 +19,7 @@ export async function GET(
     const ride = await prisma.ride.findUnique({
       where: { id },
       include: {
-        driver: {
+        owner: {
           select: { id: true, name: true, image: true },
         },
       },
@@ -59,9 +59,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Ride not found" }, { status: 404 })
     }
 
-    if (existingRide.driverId !== session.user.id) {
+    if (existingRide.ownerId !== session.user.id) {
       return NextResponse.json(
-        { error: "Only the driver can edit this ride" },
+        { error: "Only the owner can edit this ride" },
         { status: 403 }
       )
     }
@@ -146,9 +146,9 @@ export async function DELETE(
       return NextResponse.json({ error: "Ride not found" }, { status: 404 })
     }
 
-    if (existingRide.driverId !== session.user.id) {
+    if (existingRide.ownerId !== session.user.id) {
       return NextResponse.json(
-        { error: "Only the driver can cancel this ride" },
+        { error: "Only the owner can cancel this ride" },
         { status: 403 }
       )
     }

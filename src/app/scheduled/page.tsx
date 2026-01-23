@@ -27,7 +27,7 @@ export default async function ScheduledPage() {
   // Fetch rides where user is DRIVING (posted with rideRole = DRIVER)
   const ridesImDriving = await prisma.ride.findMany({
     where: {
-      driverId: session.user.id,
+      ownerId: session.user.id,
       rideRole: "DRIVER",
     },
     include: {
@@ -50,7 +50,7 @@ export default async function ScheduledPage() {
   // Fetch rides where user NEEDS A RIDE (posted with rideRole = RIDER)
   const ridesImLookingFor = await prisma.ride.findMany({
     where: {
-      driverId: session.user.id,
+      ownerId: session.user.id,
       rideRole: "RIDER",
     },
     include: {
@@ -79,7 +79,7 @@ export default async function ScheduledPage() {
     include: {
       ride: {
         include: {
-          driver: {
+          owner: {
             select: { id: true, name: true, image: true },
           },
         },
@@ -103,7 +103,7 @@ export default async function ScheduledPage() {
       departureDate: Date | null
       departureTime: string
       isRecurring: boolean
-      driver: {
+      owner: {
         id: string
         name: string | null
         image: string | null
@@ -120,7 +120,7 @@ export default async function ScheduledPage() {
     include: {
       ride: {
         include: {
-          driver: {
+          owner: {
             select: { id: true, name: true, image: true },
           },
         },
@@ -347,23 +347,23 @@ export default async function ScheduledPage() {
                         {request.ride.isRecurring ? "Recurring" : formatDate(request.ride.departureDate)} at {request.ride.departureTime}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs text-gray-500">Driver:</span>
+                        <span className="text-xs text-gray-500">Posted by:</span>
                         <div className="flex items-center gap-1">
-                          {request.ride.driver.image ? (
+                          {request.ride.owner.image ? (
                             <img
-                              src={request.ride.driver.image}
+                              src={request.ride.owner.image}
                               alt=""
                               className="w-5 h-5 rounded-full"
                             />
                           ) : (
                             <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center">
                               <span className="text-xs text-gray-600">
-                                {request.ride.driver.name?.[0] || "?"}
+                                {request.ride.owner.name?.[0] || "?"}
                               </span>
                             </div>
                           )}
                           <span className="text-sm text-gray-700">
-                            {request.ride.driver.name?.split(" ")[0] || "User"}
+                            {request.ride.owner.name?.split(" ")[0] || "User"}
                           </span>
                         </div>
                       </div>

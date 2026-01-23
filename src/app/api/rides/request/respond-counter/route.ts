@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       include: {
         ride: {
           include: {
-            driver: {
+            owner: {
               select: { id: true, name: true },
             },
           },
@@ -76,15 +76,15 @@ export async function POST(request: NextRequest) {
       const priceInfo = rideRequest.counterPrice !== null ? ` at $${rideRequest.counterPrice}/seat` : ""
       await prisma.message.create({
         data: {
-          senderId: rideRequest.ride.driverId,
+          senderId: rideRequest.ride.ownerId,
           receiverId: session.user.id,
           rideId: rideRequest.rideId,
           content: `Great! Your ride from ${rideRequest.ride.origin} to ${rideRequest.ride.destination} is confirmed${priceInfo}! Feel free to message me to coordinate.`,
         },
       })
 
-      // Notify the driver
-      sendPushNotification(rideRequest.ride.driverId, {
+      // Notify the owner
+      sendPushNotification(rideRequest.ride.ownerId, {
         title: "Counter-Offer Accepted!",
         body: `${session.user.name || "Passenger"} accepted your counter-offer of $${rideRequest.counterPrice}/seat`,
         url: `/messages/${session.user.id}`,
@@ -100,8 +100,8 @@ export async function POST(request: NextRequest) {
       data: { status: "CANCELLED" },
     })
 
-    // Notify the driver
-    sendPushNotification(rideRequest.ride.driverId, {
+    // Notify the owner
+    sendPushNotification(rideRequest.ride.ownerId, {
       title: "Counter-Offer Declined",
       body: `${session.user.name || "Passenger"} declined your counter-offer for the ride to ${rideRequest.ride.destination}`,
       url: "/requests",

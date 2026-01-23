@@ -90,7 +90,7 @@ model VerificationToken {
 
 model Ride {
   id          String   @id @default(cuid())
-  driverId    String
+  ownerId     String
 
   // Location
   origin      String   // e.g., "Colgate University, Hamilton, NY"
@@ -131,10 +131,10 @@ model Ride {
   updatedAt   DateTime   @updatedAt
 
   // Relations
-  driver      User          @relation("RidesPosted", fields: [driverId], references: [id], onDelete: Cascade)
+  owner       User          @relation("RidesPosted", fields: [ownerId], references: [id], onDelete: Cascade)
   requests    RideRequest[]
 
-  @@index([driverId])
+  @@index([ownerId])
   @@index([departureDate])
   @@index([origin])
   @@index([destination])

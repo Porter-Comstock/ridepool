@@ -24,7 +24,7 @@ export default async function DashboardPage({
 
   const availableRides = await prisma.ride.findMany({
     where: {
-      driverId: { not: session.user.id },
+      ownerId: { not: session.user.id },
       status: "ACTIVE",
       OR: [
         { departureDate: { gte: today } },
@@ -33,7 +33,7 @@ export default async function DashboardPage({
       ],
     },
     include: {
-      driver: {
+      owner: {
         select: {
           id: true,
           name: true,
@@ -51,7 +51,7 @@ export default async function DashboardPage({
   // Count pending requests for user's rides
   const pendingRequestsCount = await prisma.rideRequest.count({
     where: {
-      ride: { driverId: session.user.id },
+      ride: { ownerId: session.user.id },
       status: "PENDING",
     },
   })
@@ -76,7 +76,7 @@ export default async function DashboardPage({
     isRecurring: ride.isRecurring,
     rideType: ride.rideType,
     rideRole: ride.rideRole,
-    driver: ride.driver,
+    owner: ride.owner,
   }))
 
   return (

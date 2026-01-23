@@ -34,7 +34,7 @@ export default async function RideDetailPage({
   const ride = await prisma.ride.findUnique({
     where: { id },
     include: {
-      driver: {
+      owner: {
         select: {
           id: true,
           name: true,
@@ -61,7 +61,7 @@ export default async function RideDetailPage({
     notFound()
   }
 
-  const isDriver = ride.driverId === session.user.id
+  const isOwner = ride.ownerId === session.user.id
   const seatsRemaining = ride.seatsAvailable - ride.requests.length
 
   // Check if user already has a pending, countered, or accepted request
@@ -198,35 +198,35 @@ export default async function RideDetailPage({
             )}
           </div>
 
-          {/* Driver Info */}
+          {/* Posted By Info */}
           <div className="p-6 border-t bg-gray-50">
-            <p className="text-sm text-gray-500 mb-3">Driver</p>
+            <p className="text-sm text-gray-500 mb-3">Posted by</p>
             <div className="flex items-center gap-3">
-              {ride.driver.image ? (
+              {ride.owner.image ? (
                 <img
-                  src={ride.driver.image}
+                  src={ride.owner.image}
                   alt=""
                   className="w-12 h-12 rounded-full"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center">
                   <span className="text-gray-600 font-medium">
-                    {ride.driver.name?.[0] || "?"}
+                    {ride.owner.name?.[0] || "?"}
                   </span>
                 </div>
               )}
               <div>
                 <p className="font-medium text-gray-900">
-                  {ride.driver.name || "Anonymous"}
+                  {ride.owner.name || "Anonymous"}
                 </p>
-                <p className="text-sm text-gray-500">{ride.driver.email}</p>
+                <p className="text-sm text-gray-500">{ride.owner.email}</p>
               </div>
             </div>
           </div>
 
           {/* Action */}
           <div className="p-6 border-t">
-            {isDriver ? (
+            {isOwner ? (
               <div className="flex gap-3">
                 <Link
                   href={`/rides/${ride.id}/edit`}
