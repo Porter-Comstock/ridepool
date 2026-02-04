@@ -52,33 +52,45 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate that departure date/time is not in the past
+    // Validate that departure date/time is not in the past (using client's timezone)
     if (!isRecurring && departureDate) {
-      const now = new Date()
+      // Client sends their timezone offset in minutes (e.g., 300 for EST = UTC-5)
+      // getTimezoneOffset() returns positive for timezones behind UTC
+      const offsetMinutes = typeof timezoneOffset === "number" ? timezoneOffset : 0
 
-      // Calculate user's local time using their timezone offset
-      // timezoneOffset is in minutes, positive for timezones behind UTC (e.g., 300 for EST)
-      const offsetMs = (timezoneOffset || 0) * 60 * 1000
-      const userLocalNow = new Date(now.getTime() - offsetMs)
-      const userTodayStr = userLocalNow.toISOString().split("T")[0]
+      // Calculate what time it is RIGHT NOW in the client's timezone
+      const serverNow = new Date()
+      const clientNowMs = serverNow.getTime() - offsetMinutes * 60 * 1000
+      const clientNow = new Date(clientNowMs)
 
-      // Check if date is in the past (using user's local date)
-      if (departureDate < userTodayStr) {
+      // Extract client's local date and time
+      const clientDateStr = clientNow.toISOString().split("T")[0] // "YYYY-MM-DD"
+      const clientTimeStr = clientNow.toISOString().split("T")[1].substring(0, 5) // "HH:MM"
+
+      // Debug logging (visible in Vercel logs)
+      console.log("Time validation:", {
+        serverNow: serverNow.toISOString(),
+        timezoneOffset: offsetMinutes,
+        clientDateStr,
+        clientTimeStr,
+        departureDate,
+        departureTime,
+      })
+
+      // Check if the departure date is in the past
+      if (departureDate < clientDateStr) {
         return NextResponse.json(
-          { error: "Cannot schedule a ride in the past" },
+          { error: "This date has already passed. Please select today or a future date." },
           { status: 400 }
         )
       }
 
-      // If date is today, also check if the time has passed
-      if (departureDate === userTodayStr && departureTime) {
-        const userCurrentTimeStr = userLocalNow.toISOString().split("T")[1].substring(0, 5) // "HH:MM"
-        if (departureTime < userCurrentTimeStr) {
-          return NextResponse.json(
-            { error: "Cannot schedule a ride for a time that has already passed" },
-            { status: 400 }
-          )
-        }
+      // If departure is today, check if the time has already passed
+      if (departureDate === clientDateStr && departureTime < clientTimeStr) {
+        return NextResponse.json(
+          { error: "This time has already passed. Please select a later time." },
+          { status: 400 }
+        )
       }
     }
 

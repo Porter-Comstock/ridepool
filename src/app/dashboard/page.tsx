@@ -21,18 +21,18 @@ export default async function DashboardPage({
   const initialTab = params.tab === "bulletin" ? "bulletin" : "create"
 
   // Fetch available rides from OTHER users (for the bulletin)
-  // Show all active rides - future rides, recurring rides, or rides with no date set
-  // Subtract 1 day to account for timezone differences (server is UTC, users may be in US timezones)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  today.setDate(today.getDate() - 1)
+  // Show rides from yesterday onwards to account for timezone differences
+  // (server runs in UTC, users may be up to 12 hours behind)
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - 1)
+  cutoffDate.setHours(0, 0, 0, 0)
 
   const availableRides = await prisma.ride.findMany({
     where: {
       ownerId: { not: session.user.id },
       status: "ACTIVE",
       OR: [
-        { departureDate: { gte: today } },
+        { departureDate: { gte: cutoffDate } },
         { departureDate: null },
         { isRecurring: true },
       ],
