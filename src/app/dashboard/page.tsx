@@ -3,6 +3,9 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { DashboardClient } from "@/components/dashboard-client"
 
+// Disable caching - always fetch fresh data
+export const dynamic = "force-dynamic"
+
 export default async function DashboardPage({
   searchParams,
 }: {

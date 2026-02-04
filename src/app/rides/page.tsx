@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { RideSearch } from "./ride-search"
 
+// Disable caching - always fetch fresh data
+export const dynamic = "force-dynamic"
+
 interface SearchParams {
   origin?: string
   destination?: string
