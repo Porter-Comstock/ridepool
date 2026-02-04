@@ -22,8 +22,10 @@ export default async function DashboardPage({
 
   // Fetch available rides from OTHER users (for the bulletin)
   // Show all active rides - future rides, recurring rides, or rides with no date set
+  // Subtract 1 day to account for timezone differences (server is UTC, users may be in US timezones)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  today.setDate(today.getDate() - 1)
 
   const availableRides = await prisma.ride.findMany({
     where: {

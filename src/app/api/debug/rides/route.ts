@@ -9,8 +9,10 @@ export async function GET() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
   }
 
+  // Subtract 1 day to account for timezone differences (server is UTC, users may be in US timezones)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  today.setDate(today.getDate() - 1)
 
   // Get ALL active rides (no filtering)
   const allActiveRides = await prisma.ride.findMany({
