@@ -1,8 +1,6 @@
 import { Resend } from "resend"
 import { NextResponse } from "next/server"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const SUPPORT_EMAIL = "porter.comstock@gmail.com"
 
 const categoryLabels: Record<string, string> = {
@@ -28,6 +26,7 @@ export async function POST(request: Request) {
 
     const categoryLabel = categoryLabels[category] || category
 
+    const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: "Gate Rides Support <support@updates.gaterides.com>",
       to: SUPPORT_EMAIL,
