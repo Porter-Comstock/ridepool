@@ -32,19 +32,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       // Add user ID to token on first sign-in
       if (user) {
         token.id = user.id
-        // Fetch termsAcceptedAt from database
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { termsAcceptedAt: true },
-        })
-        token.termsAcceptedAt = dbUser?.termsAcceptedAt ?? null
       }
-      // Refresh termsAcceptedAt on session update
-      if (trigger === "update" && token.id) {
+      // Re-check DB whenever termsAcceptedAt is not yet set on the token.
+      // This ensures the token picks up the change right after the user
+      // accepts terms, without relying on useSession().update().
+      if (token.id && !token.termsAcceptedAt) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: { termsAcceptedAt: true },
