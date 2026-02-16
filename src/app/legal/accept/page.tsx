@@ -34,7 +34,8 @@ export default function AcceptTermsPage() {
       // Update the session to reflect the new termsAcceptedAt value
       await update()
 
-      router.push("/dashboard")
+      // Use hard navigation to ensure the fresh JWT cookie is sent to middleware
+      window.location.href = "/dashboard"
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
