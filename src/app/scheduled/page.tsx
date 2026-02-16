@@ -135,6 +135,7 @@ export default async function ScheduledPage() {
       weekday: "short",
       month: "short",
       day: "numeric",
+      timeZone: "UTC",
     })
   }
 

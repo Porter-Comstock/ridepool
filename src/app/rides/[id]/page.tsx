@@ -115,6 +115,7 @@ export default async function RideDetailPage({
                       year: "numeric",
                       month: "long",
                       day: "numeric",
+                      timeZone: "UTC",
                     })
                   )}
                 </p>
@@ -162,7 +163,7 @@ export default async function RideDetailPage({
                   </p>
                   {recurringUntil && (
                     <p className="text-sm text-gray-500">
-                      Until {new Date(recurringUntil).toLocaleDateString()}
+                      Until {new Date(recurringUntil).toLocaleDateString("en-US", { timeZone: "UTC" })}
                     </p>
                   )}
                 </div>

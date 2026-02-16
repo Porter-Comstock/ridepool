@@ -309,6 +309,7 @@ export function DashboardClient({
                           weekday: "short",
                           month: "short",
                           day: "numeric",
+                          timeZone: "UTC",
                         })
                       : "Flexible date"}{" "}
                     at {ride.departureTime}

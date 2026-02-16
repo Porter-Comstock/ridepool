@@ -123,7 +123,7 @@ export default async function RequestsPage() {
                         <p className="text-xs text-gray-500 mt-1">
                           {request.ride.isRecurring
                             ? `Recurring at ${request.ride.departureTime}`
-                            : `${request.ride.departureDate?.toLocaleDateString()} at ${request.ride.departureTime}`}
+                            : `${request.ride.departureDate?.toLocaleDateString("en-US", { timeZone: "UTC" })} at ${request.ride.departureTime}`}
                         </p>
                         {request.message && (
                           <p className="text-sm text-gray-600 mt-2 italic">
@@ -187,7 +187,7 @@ export default async function RequestsPage() {
                       <p className="text-xs text-gray-500 mt-1">
                         {request.ride.isRecurring
                           ? `Recurring at ${request.ride.departureTime}`
-                          : `${request.ride.departureDate?.toLocaleDateString()} at ${request.ride.departureTime}`}
+                          : `${request.ride.departureDate?.toLocaleDateString("en-US", { timeZone: "UTC" })} at ${request.ride.departureTime}`}
                       </p>
                       {/* Price info for non-pending requests */}
                       {request.status === "ACCEPTED" && request.agreedPrice !== null && (

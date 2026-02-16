@@ -20,9 +20,10 @@ model User {
   image         String?
   phone         String?
   bio           String?
-  emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  emailVerified    DateTime?
+  termsAcceptedAt  DateTime?  // When user accepted Terms of Service & Privacy Policy
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   // Stripe Connect (for drivers receiving payments)
   stripeConnectAccountId          String?
@@ -40,6 +41,7 @@ model User {
   messagesSent      Message[]           @relation("MessagesSent")
   messagesReceived  Message[]           @relation("MessagesReceived")
   pushSubscriptions PushSubscription[]
+  paymentMethods    PaymentMethod[]
 
   @@index([email])
 }
@@ -251,6 +253,27 @@ model Message {
 // ============================================================================
 // PUSH NOTIFICATIONS
 // ============================================================================
+
+// ============================================================================
+// PAYMENT METHODS
+// ============================================================================
+
+model PaymentMethod {
+  id                    String   @id @default(cuid())
+  userId                String
+  stripePaymentMethodId String   @unique
+  brand                 String   // "visa", "mastercard", etc.
+  last4                 String   // "4242"
+  expMonth              Int
+  expYear               Int
+  isDefault             Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
 
 model PushSubscription {
   id        String   @id @default(cuid())

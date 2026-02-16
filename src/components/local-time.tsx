@@ -17,7 +17,7 @@ export function LocalTime({ date, format = "time", className }: LocalTimeProps) 
           minute: "2-digit",
         })
       case "date":
-        return dateObj.toLocaleDateString()
+        return dateObj.toLocaleDateString("en-US", { timeZone: "UTC" })
       case "datetime":
         return dateObj.toLocaleString([], {
           month: "short",

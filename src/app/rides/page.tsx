@@ -150,6 +150,7 @@ export default async function RidesPage({
                                 weekday: "short",
                                 month: "short",
                                 day: "numeric",
+                                timeZone: "UTC",
                               })}{" "}
                               at {ride.departureTime}
                             </>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { ProfileForm } from "./profile-form"
 import { StripeConnectButton } from "@/components/stripe-connect-button"
+import { PaymentMethodsSection } from "@/components/payment-methods-section"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -106,8 +107,14 @@ export default async function ProfilePage() {
           <StripeConnectButton />
         </div>
 
+        {/* Payment Methods */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
+          <PaymentMethodsSection />
+        </div>
+
         {/* Edit Form */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Profile</h3>
           <ProfileForm
             initialData={{
@@ -116,6 +123,31 @@ export default async function ProfilePage() {
               bio: user.bio || "",
             }}
           />
+        </div>
+
+        {/* Help & Support */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Help & Support</h3>
+          <p className="text-gray-600 text-sm mb-4">
+            Have a question or need help? We&apos;re here for you.
+          </p>
+          <Link
+            href="/support"
+            className="inline-flex items-center gap-2 text-[#821019] hover:underline font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Contact Support
+          </Link>
+          <div className="mt-4 pt-4 border-t flex gap-4 text-sm">
+            <Link href="/legal/terms" className="text-gray-500 hover:text-gray-700">
+              Terms of Service
+            </Link>
+            <Link href="/legal/privacy" className="text-gray-500 hover:text-gray-700">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </div>
