@@ -66,6 +66,17 @@ function LoginContent() {
         <p className="mt-4 text-center text-sm text-gray-500">
           Use your @colgate.edu email address
         </p>
+
+        <p className="mt-6 text-center text-xs text-gray-400">
+          By signing in, you agree to our{" "}
+          <Link href="/legal/terms" className="text-[#821019] hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/privacy" className="text-[#821019] hover:underline">
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </div>
   )

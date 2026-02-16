@@ -226,9 +226,17 @@ export default async function Home() {
             />
             <span className="font-semibold text-white">Gate Rides</span>
           </div>
-          <p className="text-sm">
-            Made for Colgate University students
-          </p>
+          <div className="flex items-center gap-6 text-sm">
+            <Link href="/support" className="hover:text-white transition-colors">
+              Support
+            </Link>
+            <Link href="/legal/terms" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <Link href="/legal/privacy" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

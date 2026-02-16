@@ -32,17 +32,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       // Add user ID to token on first sign-in
       if (user) {
         token.id = user.id
+        // Fetch termsAcceptedAt from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { termsAcceptedAt: true },
+        })
+        token.termsAcceptedAt = dbUser?.termsAcceptedAt ?? null
+      }
+      // Refresh termsAcceptedAt on session update
+      if (trigger === "update" && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { termsAcceptedAt: true },
+        })
+        token.termsAcceptedAt = dbUser?.termsAcceptedAt ?? null
       }
       return token
     },
     async session({ session, token }) {
-      // Add user ID to session from token
+      // Add user ID and termsAcceptedAt to session from token
       if (session.user && token.id) {
         session.user.id = token.id as string
+        session.user.termsAcceptedAt = (token.termsAcceptedAt as Date | null) ?? null
       }
       return session
     },
