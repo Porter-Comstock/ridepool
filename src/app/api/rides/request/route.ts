@@ -85,7 +85,6 @@ export async function POST(request: NextRequest) {
 
     if (acceptsOriginalPrice) {
       // Auto-confirm: Create request with ACCEPTED status
-      const isFreeRide = originalPrice === null || originalPrice === 0
       const rideRequest = await prisma.rideRequest.create({
         data: {
           rideId,
@@ -95,7 +94,6 @@ export async function POST(request: NextRequest) {
           proposedPrice: originalPrice,
           agreedPrice: originalPrice,
           status: "ACCEPTED",
-          ...(isFreeRide ? { paymentStatus: "NOT_REQUIRED" } : {}),
         },
       })
 

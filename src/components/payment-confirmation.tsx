@@ -14,7 +14,7 @@ interface PaymentMethod {
 
 interface PaymentConfirmationProps {
   rideRequestId: string
-  agreedPrice: number
+  agreedPrice: number | null
 }
 
 function brandDisplay(brand: string): string {
@@ -42,7 +42,8 @@ export function PaymentConfirmation({
   const [error, setError] = useState<string | null>(null)
 
   const platformFee = 5.0
-  const totalAmount = agreedPrice + platformFee
+  const ridePrice = agreedPrice || 0
+  const totalAmount = ridePrice + platformFee
 
   const fetchCards = useCallback(async () => {
     try {
@@ -184,7 +185,7 @@ export function PaymentConfirmation({
       )}
 
       <p className="text-xs text-blue-600 mb-3">
-        ${agreedPrice.toFixed(2)} ride + ${platformFee.toFixed(2)} platform fee
+        ${ridePrice.toFixed(2)} ride + ${platformFee.toFixed(2)} platform fee
       </p>
 
       {error && (

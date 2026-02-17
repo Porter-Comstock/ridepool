@@ -64,13 +64,11 @@ export async function POST(request: NextRequest) {
 
     if (action === "accept") {
       // Accept the counter-offer
-      const isFreeRide = rideRequest.counterPrice === null || rideRequest.counterPrice === 0
       const updatedRequest = await prisma.rideRequest.update({
         where: { id: requestId },
         data: {
           status: "ACCEPTED",
           agreedPrice: rideRequest.counterPrice,
-          ...(isFreeRide ? { paymentStatus: "NOT_REQUIRED" } : {}),
         },
       })
 

@@ -75,14 +75,11 @@ export async function POST(request: NextRequest) {
       // Accept the proposed price (or original price if they accepted it)
       const agreedPrice = rideRequest.proposedPrice ?? rideRequest.ride.pricePerSeat
 
-      const isFreeRide = agreedPrice === null || agreedPrice === 0
-
       const updatedRequest = await prisma.rideRequest.update({
         where: { id: requestId },
         data: {
           status: "ACCEPTED",
           agreedPrice,
-          ...(isFreeRide ? { paymentStatus: "NOT_REQUIRED" } : {}),
         },
       })
 

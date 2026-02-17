@@ -18,12 +18,9 @@ export function PaymentStatusBadge({
   // Calculate total amount (agreed price + $5 platform fee)
   const totalAmount = (agreedPrice || 0) + 5
 
-  // For PENDING and FAILED statuses with an agreed price, show the PaymentConfirmation flow
-  if (
-    (paymentStatus === "PENDING" || paymentStatus === "FAILED") &&
-    agreedPrice &&
-    agreedPrice > 0
-  ) {
+  // For PENDING and FAILED statuses, show the PaymentConfirmation flow.
+  // All rides require at least the $5 platform fee, even free rides.
+  if (paymentStatus === "PENDING" || paymentStatus === "FAILED") {
     return (
       <div>
         <div className="flex items-center gap-2">
@@ -80,7 +77,7 @@ export function PaymentStatusBadge({
         }
       case "NOT_REQUIRED":
         return {
-          label: "Free",
+          label: "No driver fee",
           className: "bg-gray-100 text-gray-600",
         }
       default:
