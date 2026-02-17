@@ -31,10 +31,12 @@ export default function AcceptTermsPage() {
         throw new Error(data.error || "Failed to accept terms")
       }
 
-      // Update the session to reflect the new termsAcceptedAt value
-      await update()
+      // Pass termsAcceptedAt directly to the JWT callback via update().
+      // This sets it on the token without needing a Prisma query
+      // (which would fail in Edge runtime middleware).
+      await update({ termsAcceptedAt: new Date().toISOString() })
 
-      // Use hard navigation to ensure the fresh JWT cookie is sent to middleware
+      // Hard navigation ensures the fresh JWT cookie is sent to middleware
       window.location.href = "/dashboard"
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")

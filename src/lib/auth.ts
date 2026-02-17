@@ -32,20 +32,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async jwt({ token, user }) {
-      // Add user ID to token on first sign-in
+    async jwt({ token, user, trigger, session }) {
+      // On initial sign-in, fetch termsAcceptedAt from DB.
+      // This runs in Node.js (API route), so Prisma is safe here.
       if (user) {
         token.id = user.id
-      }
-      // Re-check DB whenever termsAcceptedAt is not yet set on the token.
-      // This ensures the token picks up the change right after the user
-      // accepts terms, without relying on useSession().update().
-      if (token.id && !token.termsAcceptedAt) {
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
+          where: { id: user.id },
           select: { termsAcceptedAt: true },
         })
         token.termsAcceptedAt = dbUser?.termsAcceptedAt ?? null
+      }
+      // Accept termsAcceptedAt passed from client via useSession().update().
+      // This avoids a Prisma call in the JWT callback, which would fail
+      // when running in Edge runtime (middleware).
+      if (trigger === "update" && session?.termsAcceptedAt) {
+        token.termsAcceptedAt = session.termsAcceptedAt
       }
       return token
     },
