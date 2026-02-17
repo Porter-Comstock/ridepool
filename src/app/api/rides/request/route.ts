@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
 
     if (acceptsOriginalPrice) {
       // Auto-confirm: Create request with ACCEPTED status
+      const isFreeRide = originalPrice === null || originalPrice === 0
       const rideRequest = await prisma.rideRequest.create({
         data: {
           rideId,
@@ -94,8 +95,17 @@ export async function POST(request: NextRequest) {
           proposedPrice: originalPrice,
           agreedPrice: originalPrice,
           status: "ACCEPTED",
+          ...(isFreeRide ? { paymentStatus: "NOT_REQUIRED" } : {}),
         },
       })
+
+      // Auto-set ride to FULL if no seats remaining
+      if (seatsRemaining - seatsRequested <= 0) {
+        await prisma.ride.update({
+          where: { id: rideId },
+          data: { status: "FULL" },
+        })
+      }
 
       // Create welcome message from owner to passenger
       await prisma.message.create({

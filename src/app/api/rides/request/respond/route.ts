@@ -57,16 +57,43 @@ export async function POST(request: NextRequest) {
 
     // Handle different actions
     if (action === "accept") {
+      // Check seats are still available before accepting
+      const acceptedCount = await prisma.rideRequest.count({
+        where: {
+          rideId: rideRequest.rideId,
+          status: "ACCEPTED",
+        },
+      })
+      const seatsRemaining = rideRequest.ride.seatsAvailable - acceptedCount
+      if (seatsRemaining < rideRequest.seatsRequested) {
+        return NextResponse.json(
+          { error: "Not enough seats remaining to accept this request" },
+          { status: 400 }
+        )
+      }
+
       // Accept the proposed price (or original price if they accepted it)
       const agreedPrice = rideRequest.proposedPrice ?? rideRequest.ride.pricePerSeat
+
+      const isFreeRide = agreedPrice === null || agreedPrice === 0
 
       const updatedRequest = await prisma.rideRequest.update({
         where: { id: requestId },
         data: {
           status: "ACCEPTED",
           agreedPrice,
+          ...(isFreeRide ? { paymentStatus: "NOT_REQUIRED" } : {}),
         },
       })
+
+      // Auto-set ride to FULL if no seats remaining after this acceptance
+      const newAcceptedCount = acceptedCount + rideRequest.seatsRequested
+      if (newAcceptedCount >= rideRequest.ride.seatsAvailable) {
+        await prisma.ride.update({
+          where: { id: rideRequest.rideId },
+          data: { status: "FULL" },
+        })
+      }
 
       // Create welcome message
       const priceInfo = agreedPrice !== null ? ` at $${agreedPrice}/seat` : ""
