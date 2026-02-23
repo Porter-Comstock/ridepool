@@ -29,10 +29,10 @@ export default function SupportPage() {
             </div>
             <p className="text-gray-700 mb-2">Email us at</p>
             <a
-              href="mailto:porter.comstock@gmail.com"
+              href="mailto:pcomstock@colgate.edu"
               className="text-lg font-semibold text-[#821019] hover:underline"
             >
-              porter.comstock@gmail.com
+              pcomstock@colgate.edu
             </a>
           </div>
         </div>
