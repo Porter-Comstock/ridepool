@@ -48,13 +48,13 @@ export default async function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href={session ? "/rides" : "/login"}
+              href={session ? "/dashboard" : "/login"}
               className="bg-white text-[#821019] px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
             >
               Find a Ride
             </Link>
             <Link
-              href={session ? "/rides/new" : "/login"}
+              href={session ? "/dashboard" : "/login"}
               className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
             >
               Offer a Ride
