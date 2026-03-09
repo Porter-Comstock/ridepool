@@ -1,6 +1,7 @@
 "use client"
 
 import { PaymentConfirmation } from "./payment-confirmation"
+import { PLATFORM_FEE_DOLLARS } from "@/lib/constants"
 
 interface PaymentStatusBadgeProps {
   rideRequestId: string
@@ -15,8 +16,7 @@ export function PaymentStatusBadge({
   paymentAmount,
   agreedPrice,
 }: PaymentStatusBadgeProps) {
-  // Calculate total amount (agreed price + $5 platform fee)
-  const totalAmount = (agreedPrice || 0) + 5
+  const totalAmount = (agreedPrice || 0) + PLATFORM_FEE_DOLLARS
 
   // For PENDING and FAILED statuses, show the PaymentConfirmation flow.
   // All rides require at least the $5 platform fee, even free rides.

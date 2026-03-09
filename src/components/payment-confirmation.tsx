@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { AddCardModal } from "./add-card-modal"
+import { PLATFORM_FEE_DOLLARS } from "@/lib/constants"
 
 interface PaymentMethod {
   id: string
@@ -41,7 +42,7 @@ export function PaymentConfirmation({
   const [showAddCard, setShowAddCard] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const platformFee = 5.0
+  const platformFee = PLATFORM_FEE_DOLLARS
   const ridePrice = agreedPrice || 0
   const totalAmount = ridePrice + platformFee
 
@@ -60,7 +61,7 @@ export function PaymentConfirmation({
         }
       }
     } catch {
-      // Silently fail
+      setError("Failed to load payment methods")
     } finally {
       setLoading(false)
     }
