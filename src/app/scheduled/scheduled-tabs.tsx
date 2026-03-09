@@ -109,24 +109,24 @@ function getStatusColor(status: string) {
 }
 
 const tabs = [
-  { key: "my-rides", label: "My Rides" },
-  { key: "joined", label: "Joined" },
+  { key: "posted", label: "Posted" },
+  { key: "confirmed", label: "Confirmed" },
   { key: "pending", label: "Pending" },
 ] as const
 
 type TabKey = typeof tabs[number]["key"]
 
 export function ScheduledTabs({ myRides, joinedRides, pendingRequests }: ScheduledTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>("my-rides")
+  const [activeTab, setActiveTab] = useState<TabKey>("posted")
 
   return (
     <div>
       {/* Tab bar */}
       <div className="flex border-b border-gray-200 mb-6">
         {tabs.map((tab) => {
-          const count = tab.key === "my-rides"
+          const count = tab.key === "posted"
             ? myRides.length
-            : tab.key === "joined"
+            : tab.key === "confirmed"
             ? joinedRides.length
             : pendingRequests.length
           return (
@@ -155,7 +155,7 @@ export function ScheduledTabs({ myRides, joinedRides, pendingRequests }: Schedul
       </div>
 
       {/* Tab content */}
-      {activeTab === "my-rides" && (
+      {activeTab === "posted" && (
         <div>
           {myRides.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
@@ -242,7 +242,7 @@ export function ScheduledTabs({ myRides, joinedRides, pendingRequests }: Schedul
         </div>
       )}
 
-      {activeTab === "joined" && (
+      {activeTab === "confirmed" && (
         <div>
           {joinedRides.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
