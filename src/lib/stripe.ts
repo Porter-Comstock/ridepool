@@ -9,8 +9,9 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   typescript: true,
 })
 
-// Platform fee in cents ($5.00)
+// Platform fee
 export const PLATFORM_FEE_CENTS = 500
+export const PLATFORM_FEE_DOLLARS = 5.0
 
 // Helper to convert dollars to cents
 export function dollarsToCents(dollars: number): number {

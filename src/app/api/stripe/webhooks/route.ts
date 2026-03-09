@@ -38,13 +38,20 @@ export async function POST(request: NextRequest) {
         const rideRequestId = paymentIntent.metadata.rideRequestId
 
         if (rideRequestId) {
-          await prisma.rideRequest.update({
+          // Only update if not already marked as SUCCEEDED by the cron job
+          const existing = await prisma.rideRequest.findUnique({
             where: { id: rideRequestId },
-            data: {
-              paymentStatus: "SUCCEEDED",
-              chargedAt: new Date(),
-            },
+            select: { paymentStatus: true },
           })
+          if (existing && existing.paymentStatus !== "SUCCEEDED") {
+            await prisma.rideRequest.update({
+              where: { id: rideRequestId },
+              data: {
+                paymentStatus: "SUCCEEDED",
+                chargedAt: new Date(),
+              },
+            })
+          }
         }
         break
       }

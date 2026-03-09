@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { PLATFORM_FEE_DOLLARS } from "@/lib/stripe"
 
 // POST - Assign a saved payment method to a ride request
 export async function POST(request: NextRequest) {
@@ -67,11 +68,11 @@ export async function POST(request: NextRequest) {
 
     // Calculate amounts
     const agreedPrice = rideRequest.agreedPrice || 0
-    const platformFee = 5.0
+    const platformFee = PLATFORM_FEE_DOLLARS
     const paymentAmount = agreedPrice + platformFee
     const driverPayout = agreedPrice
 
-    // Update the ride request
+    // Update the ride request (clear any previous failure reason)
     const updated = await prisma.rideRequest.update({
       where: { id: rideRequestId },
       data: {
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
         paymentAmount,
         platformFee,
         driverPayout,
+        paymentFailureReason: null,
       },
     })
 
