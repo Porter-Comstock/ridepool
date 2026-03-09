@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { CardSelector } from "@/components/card-selector"
 
 interface RequestRideButtonProps {
   rideId: string
@@ -15,19 +16,39 @@ export function RequestRideButton({ rideId, originalPrice, rideRole }: RequestRi
   const [message, setMessage] = useState("")
   const [proposedPrice, setProposedPrice] = useState(originalPrice?.toString() || "")
   const [showForm, setShowForm] = useState(false)
+  const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null)
+
+  // Check if proposed price differs from original
+  const priceChanged = proposedPrice !== "" &&
+    parseFloat(proposedPrice) !== originalPrice &&
+    !(proposedPrice === "0" && originalPrice === null)
+
+  const handleCardSelected = useCallback((id: string) => {
+    setPaymentMethodId(id)
+  }, [])
 
   const handleRequest = async () => {
+    // If accepting original price and no card selected yet, don't submit
+    if (!priceChanged && !paymentMethodId) return
+
     setIsSubmitting(true)
 
     try {
+      const body: Record<string, unknown> = {
+        rideId,
+        message,
+        proposedPrice: proposedPrice ? parseFloat(proposedPrice) : null,
+      }
+
+      // Include paymentMethodId when accepting original price
+      if (!priceChanged && paymentMethodId) {
+        body.paymentMethodId = paymentMethodId
+      }
+
       const response = await fetch("/api/rides/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          rideId,
-          message,
-          proposedPrice: proposedPrice ? parseFloat(proposedPrice) : null,
-        }),
+        body: JSON.stringify(body),
       })
 
       if (!response.ok) {
@@ -42,11 +63,6 @@ export function RequestRideButton({ rideId, originalPrice, rideRole }: RequestRi
       setIsSubmitting(false)
     }
   }
-
-  // Check if proposed price differs from original
-  const priceChanged = proposedPrice !== "" &&
-    parseFloat(proposedPrice) !== originalPrice &&
-    !(proposedPrice === "0" && originalPrice === null)
 
   // Button text based on ride role
   const buttonText = rideRole === "DRIVER" ? "Request to Join" : "Offer to Drive"
@@ -112,11 +128,19 @@ export function RequestRideButton({ rideId, originalPrice, rideRole }: RequestRi
         />
       </div>
 
+      {/* Card selector - only show when accepting original price (auto-accept path) */}
+      {!priceChanged && (
+        <CardSelector
+          agreedPrice={proposedPrice ? parseFloat(proposedPrice) : originalPrice}
+          onCardSelected={handleCardSelected}
+        />
+      )}
+
       {/* Action buttons */}
       <div className="flex gap-2">
         <button
           onClick={handleRequest}
-          disabled={isSubmitting}
+          disabled={isSubmitting || (!priceChanged && !paymentMethodId)}
           className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
           {isSubmitting ? "Sending..." : priceChanged ? "Send Offer" : "Accept & Join"}

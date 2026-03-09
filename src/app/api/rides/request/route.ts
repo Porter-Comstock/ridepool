@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { sendPushNotification } from "@/lib/notifications"
+import { PLATFORM_FEE_DOLLARS } from "@/lib/constants"
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { rideId, message, seatsRequested = 1, proposedPrice } = await request.json()
+    const { rideId, message, seatsRequested = 1, proposedPrice, paymentMethodId } = await request.json()
 
     if (!rideId) {
       return NextResponse.json({ error: "Ride ID is required" }, { status: 400 })
@@ -84,6 +85,35 @@ export async function POST(request: NextRequest) {
       (parsedProposedPrice === 0 && (originalPrice === null || originalPrice === 0))
 
     if (acceptsOriginalPrice) {
+      // If paymentMethodId provided, verify it belongs to the user
+      let paymentData: Record<string, unknown> = {}
+      if (paymentMethodId) {
+        const paymentMethod = await prisma.paymentMethod.findUnique({
+          where: { id: paymentMethodId },
+        })
+
+        if (!paymentMethod || paymentMethod.userId !== session.user.id) {
+          return NextResponse.json(
+            { error: "Invalid payment method" },
+            { status: 400 }
+          )
+        }
+
+        const agreedPrice = originalPrice || 0
+        const platformFee = PLATFORM_FEE_DOLLARS
+        const paymentAmount = agreedPrice + platformFee
+        const driverPayout = agreedPrice
+
+        paymentData = {
+          stripePaymentMethodId: paymentMethod.stripePaymentMethodId,
+          paymentStatus: "CARD_SAVED",
+          paymentAmount,
+          platformFee,
+          driverPayout,
+          paymentFailureReason: null,
+        }
+      }
+
       // Auto-confirm: Create request with ACCEPTED status
       const rideRequest = await prisma.rideRequest.create({
         data: {
@@ -94,6 +124,7 @@ export async function POST(request: NextRequest) {
           proposedPrice: originalPrice,
           agreedPrice: originalPrice,
           status: "ACCEPTED",
+          ...paymentData,
         },
       })
 

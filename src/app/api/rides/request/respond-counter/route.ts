@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { sendPushNotification } from "@/lib/notifications"
+import { PLATFORM_FEE_DOLLARS } from "@/lib/constants"
 
 // Endpoint for requester to respond to a counter-offer
 export async function POST(request: NextRequest) {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { requestId, action } = await request.json()
+    const { requestId, action, paymentMethodId } = await request.json()
 
     if (!requestId || !action) {
       return NextResponse.json(
@@ -63,12 +64,42 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "accept") {
+      // If paymentMethodId provided, verify it belongs to the user and prepare payment data
+      let paymentData: Record<string, unknown> = {}
+      if (paymentMethodId) {
+        const paymentMethod = await prisma.paymentMethod.findUnique({
+          where: { id: paymentMethodId },
+        })
+
+        if (!paymentMethod || paymentMethod.userId !== session.user.id) {
+          return NextResponse.json(
+            { error: "Invalid payment method" },
+            { status: 400 }
+          )
+        }
+
+        const agreedPrice = rideRequest.counterPrice || 0
+        const platformFee = PLATFORM_FEE_DOLLARS
+        const paymentAmount = agreedPrice + platformFee
+        const driverPayout = agreedPrice
+
+        paymentData = {
+          stripePaymentMethodId: paymentMethod.stripePaymentMethodId,
+          paymentStatus: "CARD_SAVED",
+          paymentAmount,
+          platformFee,
+          driverPayout,
+          paymentFailureReason: null,
+        }
+      }
+
       // Accept the counter-offer
       const updatedRequest = await prisma.rideRequest.update({
         where: { id: requestId },
         data: {
           status: "ACCEPTED",
           agreedPrice: rideRequest.counterPrice,
+          ...paymentData,
         },
       })
 

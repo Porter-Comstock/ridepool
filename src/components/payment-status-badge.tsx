@@ -1,48 +1,20 @@
 "use client"
 
-import { PaymentConfirmation } from "./payment-confirmation"
 import { PLATFORM_FEE_DOLLARS } from "@/lib/constants"
 
 interface PaymentStatusBadgeProps {
-  rideRequestId: string
   paymentStatus: string
   paymentAmount: number | null
   agreedPrice: number | null
 }
 
 export function PaymentStatusBadge({
-  rideRequestId,
   paymentStatus,
   paymentAmount,
   agreedPrice,
 }: PaymentStatusBadgeProps) {
   const totalAmount = (agreedPrice || 0) + PLATFORM_FEE_DOLLARS
 
-  // For PENDING and FAILED statuses, show the PaymentConfirmation flow.
-  // All rides require at least the $5 platform fee, even free rides.
-  if (paymentStatus === "PENDING" || paymentStatus === "FAILED") {
-    return (
-      <div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-              paymentStatus === "FAILED"
-                ? "bg-red-100 text-red-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {paymentStatus === "FAILED" ? "Payment Failed" : "Payment Required"}
-          </span>
-        </div>
-        <PaymentConfirmation
-          rideRequestId={rideRequestId}
-          agreedPrice={agreedPrice}
-        />
-      </div>
-    )
-  }
-
-  // For all other statuses, show a simple badge
   const getStatusDisplay = () => {
     switch (paymentStatus) {
       case "PENDING":

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { RequestRideButton } from "./request-button"
 import { CancelRideButton } from "./cancel-button"
+import { PaymentConfirmation } from "@/components/payment-confirmation"
 
 // Extract place name or short address from full Google Places address
 function formatLocation(fullAddress: string): string {
@@ -240,9 +241,19 @@ export default async function RideDetailPage({
             ) : existingRequest ? (
               <div className="text-center">
                 {existingRequest.status === "ACCEPTED" ? (
-                  <p className="font-medium text-green-600">
-                    You&apos;re confirmed for this ride!
-                  </p>
+                  <div>
+                    <p className="font-medium text-green-600">
+                      You&apos;re confirmed for this ride!
+                    </p>
+                    {(existingRequest.paymentStatus === "PENDING" || existingRequest.paymentStatus === "FAILED") && (
+                      <div className="mt-3 text-left">
+                        <PaymentConfirmation
+                          rideRequestId={existingRequest.id}
+                          agreedPrice={existingRequest.agreedPrice}
+                        />
+                      </div>
+                    )}
+                  </div>
                 ) : existingRequest.status === "COUNTERED" ? (
                   <div>
                     <p className="font-medium text-amber-600 mb-2">
