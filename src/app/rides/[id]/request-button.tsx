@@ -76,7 +76,7 @@ export function RequestRideButton({ rideId, originalPrice, rideRole }: RequestRi
             min="0"
             step="0.01"
             placeholder={originalPrice ? originalPrice.toString() : "0"}
-            className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500"
             value={proposedPrice}
             onChange={(e) => setProposedPrice(e.target.value)}
           />
@@ -105,7 +105,7 @@ export function RequestRideButton({ rideId, originalPrice, rideRole }: RequestRi
         </label>
         <textarea
           placeholder={rideRole === "DRIVER" ? "Add a message for the driver" : "Add a message for the rider"}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-gray-500"
           rows={2}
           value={message}
           onChange={(e) => setMessage(e.target.value)}

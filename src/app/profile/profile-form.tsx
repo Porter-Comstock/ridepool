@@ -67,7 +67,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
         <input
           type="text"
           placeholder="Your name"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019]"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019] placeholder:text-gray-500"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
@@ -83,7 +83,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
         <input
           type="tel"
           placeholder="(555) 123-4567"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019]"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019] placeholder:text-gray-500"
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
         />
@@ -99,7 +99,7 @@ export function ProfileForm({ initialData }: ProfileFormProps) {
         <textarea
           rows={3}
           placeholder="Tell others a bit about yourself..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019]"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#821019] focus:border-[#821019] placeholder:text-gray-500"
           value={formData.bio}
           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
         />
